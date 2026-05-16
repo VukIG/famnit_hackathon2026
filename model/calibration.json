@@ -1,0 +1,23 @@
+{
+  "dcp": {
+    "low": 15.2516,
+    "high": 44.7454
+  },
+  "tenengrad": {
+    "low": 89.7223,
+    "high": 6072.8104
+  },
+  "blue_dom": {
+    "low": 0.7955,
+    "high": 1.5511
+  },
+  "uicm": {
+    "low": 0.0049,
+    "high": 0.0219
+  },
+  "_meta": {
+    "n_images": 50,
+    "n_skipped": 0,
+    "strategy": "stratified by camera type, rng seed=42"
+  }
+}

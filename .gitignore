@@ -1,0 +1,42 @@
+# === Secrets — NEVER commit ===
+.env
+.env.*
+!.env.example
+
+# === Claude Code local config ===
+.claude/
+
+# === Python ===
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.pytest_cache/
+*.egg-info/
+
+# === Node / frontend ===
+node_modules/
+dist/
+build/
+.vite/
+
+# === Tide cache (created by our backend) ===
+.tide_cache.json
+**/.tide_cache.json
+
+# === IDEs ===
+.vscode/
+.idea/
+*.swp
+
+# === OS ===
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# === ML data (decide per case) ===
+model/data/
+*.pkl
+*.joblib
+*.h5
