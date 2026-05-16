@@ -630,10 +630,11 @@ export default function App() {
     setLoading(true);
     setStatus({ msg: "Querying forecast engine…", type: "" });
     try {
-      const response = await fetch("https://your-api-endpoint.com/api/time", {
+      const [date, timeOfDay] = time.split("T");
+      const response = await fetch("/api/predict", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ scheduledTime: time }),
+        body: JSON.stringify({ date, time: timeOfDay }),
       });
       if (response.ok) {
         setStatus({ msg: "Forecast received.", type: "ok" });
