@@ -1,5 +1,7 @@
 from datetime import datetime
+
 from fastapi import APIRouter
+
 from app.schemas import PredictionRequest, PredictionResponse
 from app.services.aggregator import build_feature_row
 from app.utils.csv_export import feature_row_to_csv
@@ -13,6 +15,6 @@ async def predict(body: PredictionRequest) -> PredictionResponse:
     target = datetime.strptime(f"{body.date} {body.time}", "%Y-%m-%d %H:%M")
 
     row = await build_feature_row(target)
-    csv_output= feature_row_to_csv(row)
-    print(csv_output)
-    return PredictionResponse(status="ok", features=row)
+    csv_output = feature_row_to_csv(row)
+
+    return PredictionResponse(status="ok", features=row, csv=csv_output)

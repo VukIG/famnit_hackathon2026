@@ -54,3 +54,4 @@ class FeatureRow(CamelModel):
 class PredictionResponse(CamelModel):
     status: str
     features: FeatureRow
+    csv: str
