@@ -48,6 +48,7 @@ class FeatureRow(CamelModel):
     next_tide_type: Optional[str] = None
     next_tide_height_m: Optional[float] = None
     next_tide_time: Optional[datetime] = None
+    water_temperature_c: Optional[float] = None
     moon_phase: Optional[float] = None
 
 

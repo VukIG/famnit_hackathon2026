@@ -6,7 +6,7 @@ import httpx
 from app.config import settings
 
 _BASE_URL = "https://marine-api.open-meteo.com/v1/marine"
-_FIELDS = "wave_height,wave_direction,wave_period,wave_peak_period"
+_FIELDS = "wave_height,wave_direction,wave_period,wind_wave_peak_period,sea_surface_temperature"
 
 
 # Fetches wave data for the target hour from Open-Meteo Marine.
@@ -31,7 +31,8 @@ async def fetch_wave_data(target: datetime) -> dict:
             "wave_height_m": data["hourly"]["wave_height"][idx],
             "wave_direction_deg": data["hourly"]["wave_direction"][idx],
             "wave_period_s": data["hourly"]["wave_period"][idx],
-            "wave_peak_period_s": data["hourly"]["wave_peak_period"][idx],
+            "wave_peak_period_s": data["hourly"]["wind_wave_peak_period"][idx],
+            "water_temperature_c": data["hourly"]["sea_surface_temperature"][idx],
         }
     except Exception as exc:
         print(f"[marine] error: {exc}", file=sys.stderr)
@@ -40,4 +41,5 @@ async def fetch_wave_data(target: datetime) -> dict:
             "wave_direction_deg": None,
             "wave_period_s": None,
             "wave_peak_period_s": None,
+            "water_temperature_c": None,
         }
