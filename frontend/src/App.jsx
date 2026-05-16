@@ -330,42 +330,97 @@ const css = `
     fill: var(--accent); text-anchor: middle;
   }
 
-  /* Date picker section */
+  /* ── Custom DateTime Picker ──────────────────────────────── */
   .picker-section {
     background: var(--surface); border: 1px solid var(--border);
     border-radius: var(--r-card); padding: 24px 28px;
     margin-bottom: 40px; box-shadow: var(--shadow-card);
+    position: relative;
+    z-index: 50;
   }
   .picker-title {
     font-family: var(--font-display); font-size: 0.9rem; font-weight: 600;
-    color: var(--ink); margin-bottom: 16px; letter-spacing: 0.01em;
+    color: var(--ink); margin-bottom: 20px; letter-spacing: 0.01em;
   }
   .picker-row {
-    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    display: flex; align-items: flex-end; gap: 8px; flex-wrap: wrap;
   }
-  .picker-input {
-    flex: 1; min-width: 200px;
+  .picker-group {
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .picker-label {
+    font-family: var(--font-body); font-size: 0.7rem; font-weight: 400;
+    color: var(--ink-faint); letter-spacing: 0.08em; text-transform: uppercase;
+    padding-left: 2px;
+  }
+  .picker-field {
     background: var(--surface-raised); border: 1px solid var(--border);
-    border-radius: var(--r-btn); padding: 10px 14px;
-    color: var(--ink); font-family: var(--font-mono); font-size: 0.875rem;
-    outline: none; transition: border-color 0.15s;
-    color-scheme: dark;
+    border-radius: var(--r-btn); padding: 10px 12px;
+    color: var(--ink); font-family: var(--font-mono); font-size: 1rem;
+    outline: none; transition: border-color 0.15s, box-shadow 0.15s;
+    -moz-appearance: textfield; appearance: textfield;
+    text-align: center;
   }
-  .picker-input:focus { border-color: var(--accent); }
+  .picker-field::-webkit-outer-spin-button,
+  .picker-field::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .picker-field:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(0,229,200,0.12);
+  }
+  .picker-field::placeholder { color: var(--ink-faint); }
+  .picker-sep {
+    font-family: var(--font-mono); color: var(--ink-muted);
+    font-size: 1.25rem; padding-bottom: 10px; user-select: none;
+  }
+  .picker-time-sep {
+    font-family: var(--font-mono); color: var(--accent); opacity: 0.7;
+    font-size: 1.25rem; padding-bottom: 10px; user-select: none;
+  }
+  .picker-divider {
+    width: 1px; height: 44px; background: var(--border); margin: 0 6px 0 6px;
+    align-self: flex-end; margin-bottom: 4px;
+  }
   .picker-btn {
     background: var(--surface-raised); border: 1px solid var(--border);
-    border-radius: var(--r-btn); padding: 10px 20px;
+    border-radius: var(--r-btn); padding: 10px 20px; height: 42px;
     color: var(--ink); font-family: var(--font-display); font-size: 0.875rem;
-    font-weight: 500; cursor: pointer; transition: border-color 0.15s, background 0.15s;
-    white-space: nowrap;
+    font-weight: 500; cursor: pointer; transition: border-color 0.15s, background 0.15s, color 0.15s;
+    white-space: nowrap; align-self: flex-end;
   }
-  .picker-btn:hover { border-color: var(--accent); background: var(--surface); }
+  .picker-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .picker-btn:disabled { opacity: 0.5; cursor: not-allowed; }
   .picker-status {
     font-size: 0.8125rem; color: var(--ink-muted);
-    font-family: var(--font-body); margin-top: 10px; min-height: 1.2em;
+    font-family: var(--font-body); margin-top: 12px; min-height: 1.2em;
   }
   .picker-status.ok { color: var(--accent); }
   .picker-status.err { color: var(--danger); }
+
+  /* ── Picker dropdown ─────────────────────────────────────── */
+  .picker-group { position: relative; }
+  .picker-dropdown {
+    position: absolute; top: calc(100% + 5px); left: 50%; transform: translateX(-50%);
+    background: #0C1C30; border: 1px solid var(--accent);
+    border-radius: 8px; z-index: 1000;
+    max-height: 192px; overflow-y: auto; overflow-x: hidden;
+    min-width: 100%;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,229,200,0.08), 0 0 24px rgba(0,229,200,0.06);
+    scrollbar-width: thin; scrollbar-color: #1A3050 transparent;
+  }
+  .picker-dropdown::-webkit-scrollbar { width: 3px; }
+  .picker-dropdown::-webkit-scrollbar-track { background: transparent; }
+  .picker-dropdown::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .picker-option {
+    padding: 9px 14px; font-family: var(--font-mono); font-size: 0.9rem;
+    color: var(--ink-muted); cursor: pointer;
+    transition: background 0.1s, color 0.1s;
+    text-align: center; white-space: nowrap;
+  }
+  .picker-option:hover { background: rgba(0,229,200,0.07); color: var(--ink); }
+  .picker-option.active {
+    color: var(--accent); background: rgba(0,229,200,0.1);
+    font-weight: 500;
+  }
 
   /* Factor Strip */
   .factor-strip {
@@ -600,11 +655,28 @@ function TideTooltip({ active, payload }) {
 
 /* ─── MAIN APP ───────────────────────────────────────────────── */
 export default function App() {
-  const [time, setTime] = useState("");
+  const now = new Date();
+  const [pickerDay,   setPickerDay]   = useState(String(now.getDate()).padStart(2, "0"));
+  const [pickerMonth, setPickerMonth] = useState(String(now.getMonth() + 1).padStart(2, "0"));
+  const [pickerYear,  setPickerYear]  = useState(String(now.getFullYear()));
+  const [pickerHour,  setPickerHour]  = useState(String(now.getHours()).padStart(2, "0"));
+  const [pickerMin,   setPickerMin]   = useState(String(now.getMinutes()).padStart(2, "0"));
+  const [pickerOpen,  setPickerOpen]  = useState(null);
   const [status, setStatus] = useState({ msg: "", type: "" });
   const [loading, setLoading] = useState(false);
   const [selectedWin, setSelectedWin] = useState(null);
-  const styleRef = useRef(null);
+  const styleRef  = useRef(null);
+  const pickerRef = useRef(null);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (pickerRef.current && !pickerRef.current.contains(e.target)) {
+        setPickerOpen(null);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   useEffect(() => {
     if (!document.getElementById("yoursea-styles")) {
@@ -623,14 +695,20 @@ export default function App() {
   const hero = MOCK_FORECAST.windows[0];
 
   const handleCheck = async () => {
-    if (!time) {
-      setStatus({ msg: "Select a date and time first.", type: "err" });
+    const d = parseInt(pickerDay, 10);
+    const mo = parseInt(pickerMonth, 10);
+    const y = parseInt(pickerYear, 10);
+    const h = parseInt(pickerHour, 10);
+    const mi = parseInt(pickerMin, 10);
+    if (!d || !mo || !y || isNaN(h) || isNaN(mi)) {
+      setStatus({ msg: "Fill in all date and time fields.", type: "err" });
       return;
     }
+    const date = `${y}-${String(mo).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+    const timeOfDay = `${String(h).padStart(2,"0")}:${String(mi).padStart(2,"0")}:00`;
     setLoading(true);
     setStatus({ msg: "Querying forecast engine…", type: "" });
     try {
-      const [date, timeOfDay] = time.split("T");
       const response = await fetch("/api/predict", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -696,16 +774,127 @@ export default function App() {
       </section>
 
       {/* DATE PICKER / API FORM */}
-      <div className="picker-section reveal reveal-2" style={{ animationDelay: "0.2s" }}>
+      <div className="picker-section reveal reveal-2" style={{ animationDelay: "0.2s" }} ref={pickerRef}>
         <div className="picker-title">Check a specific time window</div>
         <div className="picker-row">
-          <input
-            className="picker-input"
-            type="datetime-local"
-            value={time}
-            onChange={(e) => setTime(e.target.value)}
-            aria-label="Select date and time"
-          />
+
+          {/* DAY */}
+          <div className="picker-group">
+            <span className="picker-label">Day</span>
+            <input className="picker-field" type="number" min="1" max="31"
+              style={{ width: "56px" }} placeholder="DD"
+              value={pickerDay}
+              onChange={e => setPickerDay(e.target.value)}
+              onFocus={() => setPickerOpen("day")} />
+            {pickerOpen === "day" && (
+              <div className="picker-dropdown">
+                {Array.from({ length: 31 }, (_, i) => i + 1).map(v => {
+                  const val = String(v).padStart(2, "0");
+                  return (
+                    <div key={v} className={`picker-option${pickerDay === val ? " active" : ""}`}
+                      onMouseDown={e => { e.preventDefault(); setPickerDay(val); setPickerOpen(null); }}>
+                      {val}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+          <span className="picker-sep">/</span>
+
+          {/* MONTH */}
+          <div className="picker-group">
+            <span className="picker-label">Month</span>
+            <input className="picker-field" type="number" min="1" max="12"
+              style={{ width: "56px" }} placeholder="MM"
+              value={pickerMonth}
+              onChange={e => setPickerMonth(e.target.value)}
+              onFocus={() => setPickerOpen("month")} />
+            {pickerOpen === "month" && (
+              <div className="picker-dropdown">
+                {["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].map((name, i) => {
+                  const val = String(i + 1).padStart(2, "0");
+                  return (
+                    <div key={i} className={`picker-option${pickerMonth === val ? " active" : ""}`}
+                      onMouseDown={e => { e.preventDefault(); setPickerMonth(val); setPickerOpen(null); }}>
+                      {val} · {name}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+          <span className="picker-sep">/</span>
+
+          {/* YEAR */}
+          <div className="picker-group">
+            <span className="picker-label">Year</span>
+            <input className="picker-field" type="number" min="2024" max="2099"
+              style={{ width: "80px" }} placeholder="YYYY"
+              value={pickerYear}
+              onChange={e => setPickerYear(e.target.value)}
+              onFocus={() => setPickerOpen("year")} />
+            {pickerOpen === "year" && (
+              <div className="picker-dropdown">
+                {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() + i).map(y => (
+                  <div key={y} className={`picker-option${pickerYear === String(y) ? " active" : ""}`}
+                    onMouseDown={e => { e.preventDefault(); setPickerYear(String(y)); setPickerOpen(null); }}>
+                    {y}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="picker-divider" />
+
+          {/* HOUR */}
+          <div className="picker-group">
+            <span className="picker-label">Hour</span>
+            <input className="picker-field" type="number" min="0" max="23"
+              style={{ width: "56px" }} placeholder="HH"
+              value={pickerHour}
+              onChange={e => setPickerHour(e.target.value)}
+              onFocus={() => setPickerOpen("hour")} />
+            {pickerOpen === "hour" && (
+              <div className="picker-dropdown">
+                {Array.from({ length: 24 }, (_, i) => i).map(h => {
+                  const val = String(h).padStart(2, "0");
+                  return (
+                    <div key={h} className={`picker-option${pickerHour === val ? " active" : ""}`}
+                      onMouseDown={e => { e.preventDefault(); setPickerHour(val); setPickerOpen(null); }}>
+                      {val}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+          <span className="picker-time-sep">:</span>
+
+          {/* MINUTE */}
+          <div className="picker-group">
+            <span className="picker-label">Min</span>
+            <input className="picker-field" type="number" min="0" max="59"
+              style={{ width: "56px" }} placeholder="MM"
+              value={pickerMin}
+              onChange={e => setPickerMin(e.target.value)}
+              onFocus={() => setPickerOpen("min")} />
+            {pickerOpen === "min" && (
+              <div className="picker-dropdown">
+                {Array.from({ length: 12 }, (_, i) => i * 5).map(m => {
+                  const val = String(m).padStart(2, "0");
+                  return (
+                    <div key={m} className={`picker-option${pickerMin === val ? " active" : ""}`}
+                      onMouseDown={e => { e.preventDefault(); setPickerMin(val); setPickerOpen(null); }}>
+                      {val}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
           <button className="picker-btn" onClick={handleCheck} disabled={loading}>
             {loading ? "Checking…" : "Check conditions"}
           </button>
