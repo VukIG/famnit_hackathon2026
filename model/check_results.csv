@@ -1,0 +1,8 @@
+image,clarity,turbidity,dcp_score,tenengrad_score,blue_dom_score,uicm_score,unscoreable_reason
+data\test-model-work\20240401-115901-IPC608_8BC7_166.jpg,75.35,24.65,,,,,
+data\test-model-work\2023-10-16_Mero_Morena_frame180.jpg,59.88,40.12,,,,,
+data\test-model-work\20230323-030000-C4k0193.jpg,42.97,57.03,,,,,
+data\test-model-work\20240313-171201-IPC608_8B64_165.jpg,38.68,61.32,,,,,
+data\test-model-work\OBSEA_2_frame82.jpg,38.3,61.7,,,,,
+data\test-model-work\20240422-120201-IPC608_8B64_165.jpg,29.12,70.88,,,,,
+data\test-model-work\20240215-Video-3Cameras_frame59.jpg,7.06,92.94,,,,,
