@@ -1,3 +1,7 @@
 *.jpg
 23sp_4120img_34945annots_2688res
 copied_images
+*.jpg
+
+*.csv
+*.pt
