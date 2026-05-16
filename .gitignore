@@ -40,3 +40,8 @@ model/data/
 *.pkl
 *.joblib
 *.h5
+
+
+plan*
+requirements.txt
+app/visibility_model.json

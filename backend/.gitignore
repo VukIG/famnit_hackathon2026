@@ -10,3 +10,5 @@ venv/
 .env*
 plan*
 .tide_cache.json
+dataset/
+requirements.txt

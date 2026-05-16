@@ -56,3 +56,6 @@ class PredictionResponse(CamelModel):
     status: str
     features: FeatureRow
     csv: str
+    visibility_score: float
+    status_label: str
+    status_tone: str

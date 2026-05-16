@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     site_lng: float = 13.7296
     site_timezone: str = "Europe/Ljubljana"
     worldtides_api_key: str = ""
+    site_depth_m: float = 22.0
 
     model_config = SettingsConfigDict(env_file=".env")
 

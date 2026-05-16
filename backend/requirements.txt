@@ -4,3 +4,5 @@ pydantic
 pydantic-settings
 httpx
 astral
+xgboost
+numpy
