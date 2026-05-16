@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     site_lat: float = 45.5482
     site_lng: float = 13.7296
     site_timezone: str = "Europe/Ljubljana"
-    stormglass_api_key: str = ""
+    worldtides_api_key: str = ""
 
     model_config = SettingsConfigDict(env_file=".env")
 
