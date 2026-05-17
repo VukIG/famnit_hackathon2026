@@ -851,7 +851,7 @@ function MainPage() {
             ) : data ? (
               <>
                 <h1 className="hero__headline" style={{ color: toneColor(data.statusTone) }}>
-                  {Math.round(100 - data.visibilityScore)}%
+                  {Math.round(data.visibilityScore)}%
                 </h1>
                 <div className="hero__state-line">
                   {data.statusLabel.toUpperCase()}
@@ -869,7 +869,7 @@ function MainPage() {
           <div className="hero__right">
             <div className="micro" style={{ textAlign: "center", marginBottom: 8 }}>CONFIDENCE</div>
             <ConfidenceGauge
-              value={data ? (100 - data.visibilityScore) / 100 : 0}
+              value={data ? Math.min(data.visibilityScore / 100, 1) : 0}
               color={data ? toneColor(data.statusTone) : "rgba(244,248,248,0.2)"}
             />
           </div>

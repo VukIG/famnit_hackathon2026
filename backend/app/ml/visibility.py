@@ -90,4 +90,4 @@ def status_from_score(score: float) -> dict:
         return {"label": "Excellent", "tone": "good"}
     if score < 60:
         return {"label": "Moderate", "tone": "marginal"}
-    return {"label": "Poor", "tone": "poor"}
+    return {"label": "Challenging", "tone": "marginal"}
