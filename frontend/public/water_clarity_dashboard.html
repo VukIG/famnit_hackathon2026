@@ -1,0 +1,446 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#030d17;color:#e0eeff;font-family:'Inter',sans-serif}
+
+.hdr{background:#040f1f;border-bottom:1px solid #0d2540;padding:1.1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.brand{font-size:.95rem;font-weight:600;color:#e0eeff;letter-spacing:.06em;font-family:'Space Mono',monospace}
+.brand span{color:#38beff}
+.coords{font-size:.65rem;color:#3a6080;font-family:'Space Mono',monospace;margin-top:2px}
+.live-dot{width:6px;height:6px;border-radius:50%;background:#00e5a0;display:inline-block;margin-right:6px;animation:blink 1.8s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.hdr-right{font-size:.65rem;color:#3a6080;font-family:'Space Mono',monospace;display:flex;align-items:center}
+
+.verdict-band{padding:1.2rem 1.5rem;display:flex;align-items:center;gap:1.2rem;background:#040f1f;border-bottom:1px solid #0d2540}
+.verdict-icon{width:56px;height:56px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.6rem}
+.verdict-label{font-size:.65rem;font-family:'Space Mono',monospace;letter-spacing:.1em;color:#3a6080;text-transform:uppercase;margin-bottom:4px}
+.verdict-status{font-size:1.5rem;font-weight:600;line-height:1;font-family:'Space Mono',monospace}
+.verdict-desc{font-size:.72rem;color:#5a80a0;margin-top:5px;line-height:1.5}
+.verdict-score{margin-left:auto;text-align:right;flex-shrink:0}
+.score-num{font-size:2.8rem;font-weight:700;line-height:1;font-family:'Space Mono',monospace}
+.score-lbl{font-size:.6rem;color:#3a6080;font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.08em;margin-top:2px}
+
+.controls{padding:.8rem 1.5rem;display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-bottom:1px solid #0d2540;background:#040f1f}
+.ctl{font-size:.65rem;font-family:'Space Mono',monospace;color:#3a6080;text-transform:uppercase;letter-spacing:.08em;margin-right:4px}
+.tbtn{background:#071828;border:1px solid #0d2540;color:#5a80a0;font-family:'Space Mono',monospace;font-size:.65rem;padding:5px 11px;border-radius:5px;cursor:pointer;transition:.15s all}
+.tbtn:hover,.tbtn.on{border-color:#38beff;color:#38beff;background:#071e30}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;padding:1rem 1.5rem}
+.kcard{background:#040f1f;border:1px solid #0d2540;border-radius:10px;padding:.9rem 1rem;position:relative;overflow:hidden}
+.kcard::after{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--ac)}
+.klbl{font-size:.6rem;font-family:'Space Mono',monospace;color:#3a6080;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.kval{font-size:1.4rem;font-weight:700;font-family:'Space Mono',monospace;color:#e0eeff;line-height:1}
+.kunit{font-size:.6rem;color:#3a6080;font-family:'Space Mono',monospace;margin-top:3px}
+.kstatus{font-size:.6rem;font-family:'Space Mono',monospace;margin-top:5px}
+
+.section{padding:.8rem 1.5rem .4rem}
+.stitle{font-size:.65rem;font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.1em;color:#3a6080;border-bottom:1px solid #0d2540;padding-bottom:.5rem;margin-bottom:.8rem}
+
+.charts-wrap{padding:0 1.5rem 1rem;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cpanel{background:#040f1f;border:1px solid #0d2540;border-radius:10px;padding:.9rem 1rem}
+.cpanel.full{grid-column:1/-1}
+.ctitle{font-size:.65rem;font-family:'Space Mono',monospace;color:#5a80a0;margin-bottom:.6rem;display:flex;align-items:center;justify-content:space-between}
+.cbadge{font-size:.55rem;padding:2px 7px;border-radius:4px;border:1px solid;font-family:'Space Mono',monospace}
+.ch{position:relative;width:100%}
+
+.meter-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;padding:0 1.5rem .8rem}
+.meter{background:#040f1f;border:1px solid #0d2540;border-radius:10px;padding:.9rem 1rem}
+.mlbl{font-size:.6rem;font-family:'Space Mono',monospace;color:#3a6080;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.6rem}
+.mbar-bg{height:6px;background:#0a1e30;border-radius:3px;overflow:hidden}
+.mbar-fg{height:100%;border-radius:3px;transition:.4s width}
+.mval{font-size:.85rem;font-weight:700;font-family:'Space Mono',monospace;margin-top:.4rem}
+.munit{font-size:.6rem;color:#3a6080;font-family:'Space Mono',monospace}
+
+.fault-banner{margin:0 1.5rem .8rem;padding:.7rem 1rem;border-radius:8px;border:1px solid #3a1010;background:#150808;font-size:.7rem;font-family:'Space Mono',monospace;color:#ff6060;display:none;align-items:center;gap:8px}
+
+.leg{display:flex;flex-wrap:wrap;gap:10px;margin-top:.5rem}
+.li{display:flex;align-items:center;gap:5px;font-size:.6rem;color:#3a6080;font-family:'Space Mono',monospace}
+.ls{width:14px;height:2px;border-radius:1px;display:inline-block}
+.ld{width:14px;height:0;border-top:2px dashed}
+
+@media(max-width:540px){.charts-wrap{grid-template-columns:1fr}.cpanel.full{grid-column:1}.meter-row{grid-template-columns:1fr 1fr}}
+</style>
+
+<h2 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Water clarity monitoring dashboard showing turbidity, wave height, wind speed, and sea surface temperature over datetime.</h2>
+
+<div class="hdr">
+  <div>
+    <div class="brand">HYDRO<span>CLEAR</span> · Water Clarity Monitor</div>
+    <div class="coords" id="coordLine">41.18°N 1.75°E · Depth 20 m · Mediterranean</div>
+  </div>
+  <div class="hdr-right"><span class="live-dot"></span><span id="rangeLabel">—</span></div>
+</div>
+
+<div class="verdict-band" id="verdictBand">
+  <div class="verdict-icon" id="vIcon"><i class="ti ti-loader" aria-hidden="true"></i></div>
+  <div class="verdict-text">
+    <div class="verdict-label">Dive clearance</div>
+    <div class="verdict-status" id="vStatus">Loading…</div>
+    <div class="verdict-desc" id="vDesc">Analysing sensor data…</div>
+  </div>
+  <div class="verdict-score">
+    <div class="score-num" id="vScore">—</div>
+    <div class="score-lbl">clarity score / 100</div>
+  </div>
+</div>
+
+<div class="controls">
+  <span class="ctl" style="margin-left:8px">Data</span>
+  <select id="sourceSelect" style="background:#071828;border:1px solid #0d2540;color:#5a80a0;font-family:'Space Mono',monospace;font-size:.65rem;padding:4px 8px;border-radius:5px;border-width:1px">
+    <option value="local">Local CSV</option>
+    <option value="api">API</option>
+  </select>
+  <input id="apiUrl" placeholder="/api/sensor-data" style="background:#071828;border:1px solid #0d2540;color:#5a80a0;font-family:'Space Mono',monospace;font-size:.65rem;padding:6px 8px;border-radius:5px;border-width:1px;margin-left:8px;min-width:220px" />
+  <button id="loadBtn" class="tbtn" style="margin-left:6px">Load</button>
+  <span class="ctl" style="margin-left:10px">Auto refresh</span>
+  <button id="autoBtn" class="tbtn" style="margin-left:2px">Off</button>
+  <select id="refreshMin" style="background:#071828;border:1px solid #0d2540;color:#5a80a0;font-family:'Space Mono',monospace;font-size:.65rem;padding:4px 8px;border-radius:5px;border-width:1px">
+    <option value="1" selected>1 min</option>
+    <option value="5">5 min</option>
+    <option value="10">10 min</option>
+    <option value="15">15 min</option>
+  </select>
+  <span id="liveStamp" class="ctl" style="margin-left:8px">Last fetch: —</span>
+</div>
+
+<div id="faultBanner" class="fault-banner"><i class="ti ti-alert-triangle" aria-hidden="true" style="font-size:16px"></i><span id="faultText"></span></div>
+
+<div class="section"><div class="stitle">Live sensor snapshot</div></div>
+<div class="kpis" id="liveRow"></div>
+
+<div class="kpis" id="kpiRow"></div>
+
+<div class="meter-row" id="meterRow"></div>
+
+<div class="section"><div class="stitle">Turbidity · water clarity over time</div></div>
+<div style="padding:0 1.5rem .8rem">
+  <div class="cpanel full">
+    <div class="ctitle"><span>Turbidity (NTU) — raw &amp; smoothed, with safe-dive threshold</span><span class="cbadge" style="color:#38beff;border-color:#1a4060">PRIMARY</span></div>
+    <div class="ch" style="height:160px"><canvas id="cT" role="img" aria-label="Turbidity time series with threshold">Turbidity readings in NTU over time.</canvas></div>
+    <div class="leg">
+      <span class="li"><span class="ls" style="background:#38beff"></span>Raw NTU</span>
+      <span class="li"><span class="ld" style="border-color:#ff4d6a"></span>Safe limit (5 NTU)</span>
+    </div>
+  </div>
+</div>
+
+<div class="section"><div class="stitle">Sea conditions</div></div>
+<div class="charts-wrap">
+  <div class="cpanel">
+    <div class="ctitle"><span>Wave height (m)</span><span class="cbadge" style="color:#a78bfa;border-color:#2d1f5a">SAFETY</span></div>
+    <div class="ch" style="height:130px"><canvas id="cW" role="img" aria-label="Wave height over time">Wave height in metres.</canvas></div>
+    <div class="leg" style="margin-top:.4rem">
+      <span class="li"><span class="ls" style="background:#a78bfa"></span>Wave height m</span>
+      <span class="li"><span class="ld" style="border-color:#ff9f43"></span>Caution (1.0 m)</span>
+    </div>
+  </div>
+  <div class="cpanel">
+    <div class="ctitle"><span>Wind speed (km/h)</span><span class="cbadge" style="color:#f97316;border-color:#3a210d">SAFETY</span></div>
+    <div class="ch" style="height:130px"><canvas id="cWind" role="img" aria-label="Wind speed over time">Wind speed in km/h.</canvas></div>
+  </div>
+</div>
+
+<div class="section"><div class="stitle">Temperature context</div></div>
+<div class="charts-wrap" style="padding-bottom:1.5rem">
+  <div class="cpanel full">
+    <div class="ctitle"><span>Sea surface temp (°C)</span><span class="cbadge" style="color:#fb923c;border-color:#3a1f0a">ENV</span></div>
+    <div class="ch" style="height:130px"><canvas id="cSST" role="img" aria-label="Sea surface temperature">SST in degrees Celsius.</canvas></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script>
+let ALL=[], WIN=9999;
+let AUTO_TIMER=null;
+const CH={};
+
+const avg=a=>a.reduce((s,v)=>s+v,0)/a.length;
+
+function clarityScore(d){
+  const turb=d.turbidity_ntu;
+  const wh=d.wave_height_m;
+  const sst=d.sea_surface_temperature_c;
+  const wind=d.wind_speed_kmh;
+  let s=100;
+  if(turb>10) s-=40; else if(turb>5) s-=25; else if(turb>3) s-=12; else if(turb>1.5) s-=4;
+  if(wh>2) s-=30; else if(wh>1.5) s-=20; else if(wh>1) s-=10; else if(wh>.6) s-=4;
+  if(wind>35) s-=20; else if(wind>25) s-=12; else if(wind>18) s-=6;
+  if(sst>30||sst<10) s-=10; else if(sst>28||sst<12) s-=5;
+  return Math.max(0,Math.round(s));
+}
+
+function verdict(score,faults){
+  if(faults>0) return {status:'SENSOR FAULT',desc:'Active sensor malfunction — readings unreliable.',icon:'ti-alert-octagon',bg:'#1a0a0a',bc:'#ff4d4d',sc:'#ff4d4d'};
+  if(score>=75) return {status:'GO',desc:'Water clarity is good. Conditions are suitable for diving.',icon:'ti-circle-check',bg:'#071a10',bc:'#00e5a0',sc:'#00e5a0'};
+  if(score>=50) return {status:'CAUTION',desc:'Marginal clarity. Exercise caution and monitor conditions.',icon:'ti-alert-triangle',bg:'#18100a',bc:'#ffb300',sc:'#ffb300'};
+  return {status:'NO-GO',desc:'Poor clarity or hazardous wave conditions. Do not dive.',icon:'ti-ban',bg:'#1a0a0a',bc:'#ff4d6a',sc:'#ff4d6a'};
+}
+
+function sample(data,max=500){
+  const step=Math.max(1,Math.floor(data.length/max));
+  return data.filter((_,i)=>i%step===0);
+}
+
+function getWin(){
+  if(WIN>=9999) return ALL;
+  const cut=new Date(ALL[ALL.length-1].dt-WIN*86400000);
+  return ALL.filter(d=>d.dt>=cut);
+}
+
+function setWin(n,btn){
+  WIN=n;
+  document.querySelectorAll('.tbtn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  render();
+}
+
+const baseOpts=(color,yLabel,minY,maxY)=>({
+  responsive:true,maintainAspectRatio:false,animation:{duration:250},
+  interaction:{mode:'index',intersect:false},
+  plugins:{legend:{display:false},tooltip:{
+    backgroundColor:'rgba(3,13,23,.97)',borderColor:'rgba(56,190,255,.2)',borderWidth:1,
+    titleColor:'#3a6080',bodyColor:'#c0d8f0',
+    titleFont:{family:'Space Mono',size:9},bodyFont:{family:'Space Mono',size:10},
+    callbacks:{label:c=>`  ${c.dataset.label}: ${(+c.parsed.y).toFixed(2)}`}
+  }},
+  scales:{
+    x:{grid:{color:'rgba(13,37,64,.7)',lineWidth:.5},ticks:{color:'#2a4060',font:{family:'Space Mono',size:8},maxTicksLimit:6,maxRotation:0},border:{display:false}},
+    y:{min:minY,max:maxY,grid:{color:'rgba(13,37,64,.7)',lineWidth:.5},ticks:{color:'#2a4060',font:{family:'Space Mono',size:8},maxTicksLimit:5},border:{display:false},
+      title:yLabel?{display:true,text:yLabel,color:'#2a4060',font:{family:'Space Mono',size:8}}:{display:false}}
+  }
+});
+
+function mkChart(id,datasets,opts){
+  if(CH[id]) CH[id].destroy();
+  CH[id]=new Chart(document.getElementById(id),{type:'line',data:{datasets},options:opts});
+}
+function injectLabels(id,labels){if(CH[id]){CH[id].data.labels=labels;CH[id].update()}}
+
+function ds(vals,color,label,dashed=false,fill=false,tension=.35){
+  return{label,data:vals,borderColor:color,borderWidth:dashed?1:1.4,borderDash:dashed?[5,3]:[],
+    pointRadius:0,pointHoverRadius:3,
+    fill:fill?{target:'origin',above:color+'18'}:false,tension};
+}
+
+function render(){
+  const win=getWin();
+  if(!win.length) return;
+  const s=sample(win);
+  const labels=s.map(d=>d.dt.toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}));
+
+  const turbRaw=s.map(d=>d.turbidity_ntu);
+  const threshT=s.map(()=>5);
+  mkChart('cT',[
+    ds(turbRaw,'rgba(56,190,255,.25)','Raw NTU'),
+    ds(threshT,'#ff4d6a','Safe limit',true)
+  ],{...baseOpts('#38beff','NTU',0,null)});
+  injectLabels('cT',labels);
+
+  const whRaw=s.map(d=>d.wave_height_m);
+  const threshW=s.map(()=>1.0);
+  mkChart('cW',[
+    ds(whRaw,'rgba(167,139,250,.3)','Wave h m'),
+    ds(threshW,'#ff9f43','Caution',true)
+  ],{...baseOpts('#a78bfa','m',0,null)});
+  injectLabels('cW',labels);
+
+  const windRaw=s.map(d=>d.wind_speed_kmh);
+  const threshWind=s.map(()=>25);
+  mkChart('cWind',[
+    ds(windRaw,'rgba(249,115,22,.25)','Wind km/h'),
+    ds(threshWind,'#ff9f43','Caution',true)
+  ],{...baseOpts('#f97316','km/h',0,null)});
+  injectLabels('cWind',labels);
+
+  const sstRaw=s.map(d=>d.sea_surface_temperature_c);
+  mkChart('cSST',[
+    ds(sstRaw,'#fb923c','SST °C',false,true)
+  ],{...baseOpts('#fb923c','°C',null,null)});
+  injectLabels('cSST',labels);
+
+  const latest=win[win.length-1];
+  const faults=win.filter(d=>d.sensor_status===1).length;
+  const score=clarityScore(latest);
+  const v=verdict(score,latest.sensor_status);
+  renderLiveSnapshot(latest);
+
+  const vBand=document.getElementById('verdictBand');
+  vBand.style.background=v.bg;
+  vBand.style.borderBottom=`1px solid ${v.bc}44`;
+  document.getElementById('vIcon').innerHTML=`<i class="ti ${v.icon}" aria-hidden="true" style="color:${v.bc}"></i>`;
+  document.getElementById('vIcon').style.background=v.bc+'18';
+  document.getElementById('vStatus').textContent=v.status;
+  document.getElementById('vStatus').style.color=v.bc;
+  document.getElementById('vDesc').textContent=v.desc;
+  document.getElementById('vScore').textContent=score;
+  document.getElementById('vScore').style.color=v.sc;
+
+  function tStatus(v,lo,hi){
+    if(v<=lo) return{c:'#00e5a0',t:'GOOD'};
+    if(v<=hi) return{c:'#ffb300',t:'CAUTION'};
+    return{c:'#ff4d6a',t:'HIGH'};
+  }
+
+  const kpis=[
+    {lbl:'Datetime (latest)',val:latest.dt.toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}),unit:'UTC/local browser',ac:'#6ea8d8',...(faults===0?{c:'#00e5a0',t:'SYNCED'}:{c:'#ffb300',t:'CHECK'})},
+    {lbl:'Turbidity (latest)',val:(latest.turbidity_ntu||0).toFixed(2),unit:'NTU',ac:'#38beff',...tStatus(latest.turbidity_ntu,3,5)},
+    {lbl:'Wave height',val:(latest.wave_height_m||0).toFixed(2),unit:'m',ac:'#a78bfa',...tStatus(latest.wave_height_m,.6,1.2)},
+    {lbl:'Wind speed',val:(latest.wind_speed_kmh||0).toFixed(1),unit:'km/h',ac:'#f97316',...tStatus(latest.wind_speed_kmh,12,25)},
+    {lbl:'Sea surface temp',val:(latest.sea_surface_temperature_c||0).toFixed(1),unit:'°C',ac:'#fb923c',...tStatus(Math.abs(latest.sea_surface_temperature_c-22),0,6)},
+    {lbl:'Sensor faults',val:faults,unit:'readings',ac:'#ff4d6a',...(faults===0?{c:'#00e5a0',t:'OK'}:{c:'#ff4d6a',t:'ALERT'})},
+  ];
+  document.getElementById('kpiRow').innerHTML=kpis.map(k=>`
+    <div class="kcard" style="--ac:${k.ac}">
+      <div class="klbl">${k.lbl}</div>
+      <div class="kval">${k.val}</div>
+      <div class="kunit">${k.unit}</div>
+      <div class="kstatus" style="color:${k.c}">${k.t}</div>
+    </div>`).join('');
+
+  const meters=[
+    {lbl:'Turbidity clarity',val:Math.max(0,100-Math.min(100,(latest.turbidity_ntu/10)*100)),color:'#38beff',unit:'NTU: '+(latest.turbidity_ntu||0).toFixed(2)},
+    {lbl:'Wave safety',val:Math.max(0,100-Math.min(100,(latest.wave_height_m/2)*100)),color:'#a78bfa',unit:'Height: '+(latest.wave_height_m||0).toFixed(2)+' m'},
+    {lbl:'Wind safety',val:Math.max(0,100-Math.min(100,(latest.wind_speed_kmh/35)*100)),color:'#f97316',unit:'Wind: '+(latest.wind_speed_kmh||0).toFixed(1)+' km/h'},
+    {lbl:'Overall clarity',val:score,color:v.sc,unit:'Score: '+score+' / 100'},
+  ];
+  document.getElementById('meterRow').innerHTML=meters.map(m=>`
+    <div class="meter">
+      <div class="mlbl">${m.lbl}</div>
+      <div class="mbar-bg"><div class="mbar-fg" style="width:${m.val}%;background:${m.color}"></div></div>
+      <div class="mval" style="color:${m.color};font-family:'Space Mono',monospace">${Math.round(m.val)}%</div>
+      <div class="munit">${m.unit}</div>
+    </div>`).join('');
+
+  const fb=document.getElementById('faultBanner');
+  if(faults>0){
+    fb.style.display='flex';
+    document.getElementById('faultText').textContent=`${faults} sensor fault readings in window — affected data points excluded from clarity score.`;
+  } else fb.style.display='none';
+
+  const first=win[0].dt.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+  const last=win[win.length-1].dt.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+  document.getElementById('rangeLabel').textContent=`${win.length.toLocaleString()} readings · ${first} – ${last}`;
+}
+
+function renderLiveSnapshot(latest){
+  const live=[
+    {lbl:'Datetime',val:latest.dt.toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'}),unit:'latest sensor timestamp',ac:'#6ea8d8',c:'#00e5a0',t:'LIVE'},
+    {lbl:'Sea surface temp',val:(latest.sea_surface_temperature_c||0).toFixed(1),unit:'°C',ac:'#fb923c',c:'#fb923c',t:'CURRENT'},
+    {lbl:'Wave height',val:(latest.wave_height_m||0).toFixed(2),unit:'m',ac:'#a78bfa',c:'#a78bfa',t:'CURRENT'},
+    {lbl:'Wind speed',val:(latest.wind_speed_kmh||0).toFixed(1),unit:'km/h',ac:'#f97316',c:'#f97316',t:'CURRENT'},
+    {lbl:'Turbidity',val:(latest.turbidity_ntu||0).toFixed(2),unit:'NTU',ac:'#38beff',c:'#38beff',t:'CURRENT'},
+  ];
+  document.getElementById('liveRow').innerHTML=live.map(k=>`
+    <div class="kcard" style="--ac:${k.ac}">
+      <div class="klbl">${k.lbl}</div>
+      <div class="kval">${k.val}</div>
+      <div class="kunit">${k.unit}</div>
+      <div class="kstatus" style="color:${k.c}">${k.t}</div>
+    </div>`).join('');
+}
+
+function onSourceChange(){
+  const sel=document.getElementById('sourceSelect').value;
+  document.getElementById('apiUrl').style.display = sel==='api' ? 'inline-block' : 'none';
+}
+
+async function loadFromCSV(path){
+  const resp=await fetch(withNoCache(path));
+  const text=await resp.text();
+  const res=Papa.parse(text,{header:true,skipEmptyLines:true});
+  return res.data;
+}
+
+async function loadFromAPI(url){
+  const resp=await fetch(withNoCache(url));
+  const ct=(resp.headers.get('content-type')||'').toLowerCase();
+  if(ct.includes('application/json')) return await resp.json();
+  const text=await resp.text();
+  const res=Papa.parse(text,{header:true,skipEmptyLines:true});
+  return res.data;
+}
+
+function withNoCache(url){
+  const u=new URL(url, window.location.origin);
+  u.searchParams.set('_ts', Date.now().toString());
+  return u.toString();
+}
+
+function normalizeRows(rows){
+  const pick=(obj,keys)=>{ for(const k of keys) if(obj[k]!==undefined) return obj[k]; return undefined };
+  return rows.map(r=>{
+    const dtStr = pick(r,['datetime','date','time']) || r.datetime || r.datetime;
+    return {
+      dt:new Date(dtStr),
+      turbidity_ntu:parseFloat(pick(r,['turbidity_ntu','turbidity','turbidity_ntu']))||0,
+      wave_height_m:parseFloat(pick(r,['wave_height_m','wave_height','waveHeight']))||0,
+      wind_speed_kmh:parseFloat(pick(r,['wind_speed_kmh','wind_speed','windSpeed']))||0,
+      wave_period_s:parseFloat(pick(r,['wave_period_s','wave_period','wavePeriod']))||0,
+      sea_surface_temperature_c:parseFloat(pick(r,['sea_surface_temperature_c','sst','sea_surface_temperature']))||null,
+      sensor_status:parseInt(pick(r,['sensor_status','status']))||0
+    }
+  }).filter(d=>d.dt instanceof Date && !isNaN(d.dt) && !isNaN(d.turbidity_ntu)).sort((a,b)=>a.dt-b.dt);
+}
+
+async function loadData(){
+  const src=document.getElementById('sourceSelect').value;
+  const loadBtn=document.getElementById('loadBtn');
+  loadBtn.textContent='Loading…'; loadBtn.disabled=true;
+  try{
+    let raw;
+    if(src==='local') raw = await loadFromCSV('/data/sensor.csv');
+    else {
+      const url=document.getElementById('apiUrl').value || '/api/sensor-data';
+      raw = await loadFromAPI(url);
+    }
+    ALL = normalizeRows(raw);
+    if(!ALL.length) throw new Error('No valid rows');
+    render();
+    document.getElementById('liveStamp').textContent=`Last fetch: ${new Date().toLocaleTimeString('en-GB')}`;
+  }catch(err){
+    console.error('Load failed',err);
+    document.getElementById('vStatus').textContent='LOAD ERROR';
+    document.getElementById('vDesc').textContent='Could not load sensor data — check console and API URL.';
+  }finally{ loadBtn.textContent='Load'; loadBtn.disabled=false }
+}
+
+function startAutoRefresh(){
+  stopAutoRefresh();
+  const mins=parseInt(document.getElementById('refreshMin').value,10) || 1;
+  AUTO_TIMER=setInterval(()=>{ loadData(); }, mins*60000);
+}
+
+function stopAutoRefresh(){
+  if(AUTO_TIMER){
+    clearInterval(AUTO_TIMER);
+    AUTO_TIMER=null;
+  }
+}
+
+function toggleAutoRefresh(){
+  const btn=document.getElementById('autoBtn');
+  const turnOn=btn.textContent==='Off';
+  if(turnOn){
+    btn.textContent='On';
+    btn.classList.add('on');
+    startAutoRefresh();
+  }else{
+    btn.textContent='Off';
+    btn.classList.remove('on');
+    stopAutoRefresh();
+  }
+}
+
+// initialize UI and fetch initial data (local by default)
+document.getElementById('apiUrl').value = '/api/sensor-data';
+onSourceChange();
+document.getElementById('loadBtn').addEventListener('click', loadData);
+document.getElementById('autoBtn').addEventListener('click', toggleAutoRefresh);
+document.getElementById('refreshMin').addEventListener('change', ()=>{
+  const autoOn=document.getElementById('autoBtn').textContent==='On';
+  if(autoOn) startAutoRefresh();
+});
+loadData();
+</script>
