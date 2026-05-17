@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { BrowserRouter, Navigate, NavLink, Route, Routes } from "react-router-dom";
 import {
   AreaChart,
   Area,
@@ -8,6 +9,7 @@ import {
   ReferenceLine,
   ResponsiveContainer,
 } from "recharts";
+import { Dashboard } from "./Dashboard.jsx";
 
 /* ─── MOCK DATA ──────────────────────────────────────────────── */
 const MOCK_FORECAST = {
@@ -145,14 +147,14 @@ function confidenceLabel(c) {
   return "Low";
 }
 function stateColor(state) {
-  if (state === "optimal") return "#00E5C8";
-  if (state === "marginal") return "#F5A623";
-  return "#E05C5C";
+  if (state === "optimal") return "#7FF5DC";
+  if (state === "marginal") return "#E6B454";
+  return "#C46B6B";
 }
 function stateBg(state) {
-  if (state === "optimal") return "rgba(0,229,200,0.12)";
-  if (state === "marginal") return "rgba(245,166,35,0.12)";
-  return "rgba(224,92,92,0.12)";
+  if (state === "optimal") return "rgba(127, 245, 220, 0.15)";
+  if (state === "marginal") return "rgba(230, 180, 84, 0.18)";
+  return "rgba(196, 107, 107, 0.18)";
 }
 function stateLabel(state) {
   if (state === "optimal") return "Optimal";
@@ -173,69 +175,88 @@ function impactIcon(impact) {
   return "—";
 }
 function impactColor(impact) {
-  if (impact === "good") return "#00E5C8";
-  if (impact === "bad") return "#E05C5C";
-  return "#6B8FA8";
+  if (impact === "good") return "#7FF5DC";
+  if (impact === "bad") return "#C46B6B";
+  return "rgba(244, 248, 248, 0.4)";
 }
 function toneColor(tone) {
-  if (tone === "good") return "#00E5C8";
-  if (tone === "marginal") return "#F5A623";
-  return "#E05C5C";
+  if (tone === "good") return "#7FF5DC";
+  if (tone === "marginal") return "#E6B454";
+  return "#C46B6B";
 }
 
-/* ─── STYLES (injected into <head>) ─────────────────────────── */
+/* ─── STYLES ─────────────────────────────────────────────────── */
 const css = `
-  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap');
-
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg: #050E1A;
-    --surface: #0C1C30;
-    --surface-raised: #112440;
-    --border: #1A3050;
-    --ink: #E8F4F8;
-    --ink-muted: #6B8FA8;
-    --ink-faint: #2E4D66;
-    --accent: #00E5C8;
-    --accent-glow: rgba(0,229,200,0.15);
-    --warn: #F5A623;
-    --danger: #E05C5C;
-    --moon: #C8D8E8;
-    --shadow-card: 0 0 0 1px #1A3050, 0 4px 24px rgba(0,0,0,0.4);
-    --shadow-glow: 0 0 20px rgba(0,229,200,0.15);
-    --r-card: 12px;
+    --bg-top: #5BA8B0;
+    --bg-mid: #2E6670;
+    --bg-bottom: #133341;
+    --bg-gradient: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 45%, var(--bg-bottom) 100%);
+
+    --surface: rgba(255, 255, 255, 0.04);
+    --surface-strong: rgba(255, 255, 255, 0.07);
+    --surface-border: rgba(255, 255, 255, 0.12);
+    --surface-border-strong: rgba(255, 255, 255, 0.22);
+
+    --ink: #F4F8F8;
+    --ink-muted: rgba(244, 248, 248, 0.65);
+    --ink-faint: rgba(244, 248, 248, 0.4);
+
+    --accent: #7FF5DC;
+    --accent-dim: rgba(127, 245, 220, 0.18);
+    --accent-line: rgba(127, 245, 220, 0.45);
+
+    --state-good: #7FF5DC;
+    --state-wait: #E6B454;
+    --state-poor: #C46B6B;
+    --state-good-bg: rgba(127, 245, 220, 0.15);
+    --state-wait-bg: rgba(230, 180, 84, 0.18);
+    --state-poor-bg: rgba(196, 107, 107, 0.18);
+
+    --font-serif: "Fraunces", Georgia, serif;
+    --font-mono: "IBM Plex Mono", "Courier New", monospace;
+    --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+
+    /* legacy compat for inline refs */
+    --surface-raised: rgba(255, 255, 255, 0.07);
+    --border: rgba(255, 255, 255, 0.12);
+    --r-card: 6px;
     --r-badge: 6px;
-    --r-btn: 8px;
-    --font-display: 'Space Grotesk', sans-serif;
-    --font-body: 'IBM Plex Sans', sans-serif;
-    --font-mono: 'IBM Plex Mono', monospace;
+    --r-btn: 6px;
+    --font-display: var(--font-serif);
+    --font-body: var(--font-sans);
   }
 
-  body {
-    background: var(--bg);
-    color: var(--ink);
-    font-family: var(--font-body);
+  html, body {
+    margin: 0;
+    background: var(--bg-gradient);
+    background-attachment: fixed;
     min-height: 100vh;
+    color: var(--ink);
+    font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
 
-  /* Scrollbar */
   ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: var(--surface); }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+  ::-webkit-scrollbar-thumb { background: var(--surface-border); border-radius: 3px; }
 
-  /* Keyframes */
+  .micro {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+
   @keyframes fadein {
     from { opacity: 0; transform: translateY(16px); }
     to   { opacity: 1; transform: translateY(0); }
   }
   @keyframes gauge-fill {
     from { stroke-dashoffset: 440; }
-  }
-  @keyframes pulse-glow {
-    0%, 100% { box-shadow: var(--shadow-glow); }
-    50%       { box-shadow: 0 0 32px rgba(0,229,200,0.28); }
   }
 
   .reveal { animation: fadein 0.6s ease both; }
@@ -246,322 +267,402 @@ const css = `
   .reveal-5 { animation-delay: 0.56s; }
 
   /* Layout */
+  .app-shell { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
   .page { max-width: 1200px; margin: 0 auto; padding: 0 24px 64px; }
-  @media (min-width: 768px) { .page { padding: 0 48px 64px; } }
+  @media (min-width: 768px) {
+    .app-shell { padding: 0 48px; }
+    .page { padding: 0 48px 64px; }
+  }
 
-  /* Topbar */
+  /* Header */
   .topbar {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 20px 0 24px; border-bottom: 1px solid var(--border);
-    margin-bottom: 48px; gap: 16px; flex-wrap: wrap;
+    padding: 20px 0 24px; border-bottom: 1px solid var(--surface-border);
+    margin-bottom: 0; gap: 16px; flex-wrap: wrap;
   }
   .wordmark {
-    font-family: var(--font-display); font-size: 1.1rem; font-weight: 700;
-    letter-spacing: 0.06em; color: var(--ink); text-transform: uppercase;
+    font-family: var(--font-serif);
+    font-size: 1.6rem;
+    font-weight: 500;
+    color: var(--ink);
+    letter-spacing: -0.01em;
   }
-  .wordmark span { color: var(--accent); }
+  .wordmark-r {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--accent);
+    vertical-align: super;
+    font-weight: 400;
+  }
   .topbar-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-  .location-pill {
-    display: flex; align-items: center; gap: 6px;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 20px; padding: 6px 14px;
-    font-size: 0.8125rem; color: var(--ink-muted);
-    font-family: var(--font-body);
+  .route-nav {
+    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+    padding: 4px;
+    background: var(--surface);
+    border: 1px solid var(--surface-border);
+    border-radius: 8px;
+    backdrop-filter: blur(8px);
   }
-  .location-pill svg { width: 12px; height: 12px; stroke: var(--accent); fill: none; }
+  .route-link {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-height: 34px; padding: 0 14px;
+    border-radius: 6px;
+    color: var(--ink-muted);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .route-link:hover { color: var(--ink); background: var(--surface-strong); }
+  .route-link.active { color: var(--accent); background: var(--accent-dim); }
+  .location-pill, .date-pill {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--surface); border: 1px solid var(--surface-border);
+    border-radius: 999px; padding: 6px 14px;
+    font-family: var(--font-mono); font-size: 0.7rem;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+  .location-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent); flex-shrink: 0;
+  }
 
   /* Hero */
-  .hero {
-    display: grid; grid-template-columns: 1fr; gap: 24px;
-    margin-bottom: 40px;
+  .hero { padding: 80px 0 60px; position: relative; }
+
+  .hero__top-label {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 32px;
   }
-  @media (min-width: 768px) {
-    .hero { grid-template-columns: 1fr auto; align-items: center; gap: 40px; }
+  .hero__dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent); box-shadow: 0 0 12px var(--accent);
+    flex-shrink: 0;
   }
 
-  .hero-label {
-    font-family: var(--font-body); font-size: 0.8125rem; font-weight: 400;
-    letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-muted);
-    margin-bottom: 10px;
+  .hero__main {
+    display: grid; grid-template-columns: 1fr auto;
+    gap: 48px; align-items: center; margin-bottom: 56px;
   }
-  .hero-time {
-    font-family: var(--font-display); font-size: clamp(2.5rem, 6vw, 4rem);
-    font-weight: 700; line-height: 1.05; color: var(--ink);
-    margin-bottom: 6px; letter-spacing: -0.02em;
-  }
-  .hero-time span { color: var(--accent); }
-  .hero-sub {
-    font-family: var(--font-body); font-size: 0.9375rem;
-    color: var(--ink-muted); margin-bottom: 28px;
-  }
-  .hero-cta {
-    display: inline-flex; align-items: center; gap: 8px;
-    background: var(--accent); color: #050E1A;
-    font-family: var(--font-display); font-weight: 600; font-size: 0.9rem;
-    border: none; border-radius: var(--r-btn); padding: 12px 24px;
-    cursor: pointer; transition: opacity 0.15s ease;
-    animation: pulse-glow 3s ease-in-out infinite;
-    box-shadow: var(--shadow-glow);
-  }
-  .hero-cta:hover { opacity: 0.88; }
-  .hero-cta svg { width: 14px; height: 14px; stroke: currentColor; fill: none; }
-
-  /* Confidence Gauge */
-  .gauge-wrap {
-    display: flex; flex-direction: column; align-items: center;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--r-card); padding: 28px 40px 24px;
-    box-shadow: var(--shadow-card); min-width: 200px;
-  }
-  .gauge-label {
-    font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase;
-    color: var(--ink-muted); margin-bottom: 16px;
-    font-family: var(--font-body);
-  }
-  .gauge-svg { overflow: visible; }
-  .gauge-track { fill: none; stroke: var(--border); stroke-width: 10; stroke-linecap: round; }
-  .gauge-fill {
-    fill: none; stroke: var(--accent); stroke-width: 10; stroke-linecap: round;
-    filter: drop-shadow(0 0 6px rgba(0,229,200,0.5));
-    animation: gauge-fill 1.4s cubic-bezier(0.34,1.56,0.64,1) both;
-    animation-delay: 0.3s;
-  }
-  .gauge-pct {
-    font-family: var(--font-display); font-size: 2.2rem; font-weight: 700;
-    fill: var(--ink); text-anchor: middle; dominant-baseline: central;
-  }
-  .gauge-confidence {
-    font-family: var(--font-body); font-size: 0.75rem;
-    fill: var(--accent); text-anchor: middle;
+  @media (max-width: 640px) {
+    .hero__main { grid-template-columns: 1fr; gap: 24px; }
   }
 
-  /* ── Custom DateTime Picker ──────────────────────────────── */
-  .picker-section {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--r-card); padding: 24px 28px;
-    margin-bottom: 40px; box-shadow: var(--shadow-card);
+  .hero__right { display: flex; flex-direction: column; align-items: center; }
+
+  .hero__headline {
+    font-family: var(--font-serif);
+    font-size: clamp(3.5rem, 9vw, 9rem);
+    font-weight: 300;
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    margin: 0 0 16px;
+    color: var(--ink);
+  }
+  .hero__headline--placeholder {
+    font-style: italic;
+    color: rgba(244, 248, 248, 0.85);
+  }
+
+  .hero__state-line {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+  }
+
+  /* Hero form card */
+  .hero__form-card {
+    background: var(--surface);
+    border: 1px solid var(--surface-border);
+    border-radius: 8px;
+    padding: 28px 32px;
+    backdrop-filter: blur(8px);
     position: relative;
-    z-index: 50;
   }
-  .picker-title {
-    font-family: var(--font-display); font-size: 0.9rem; font-weight: 600;
-    color: var(--ink); margin-bottom: 20px; letter-spacing: 0.01em;
-  }
-  .picker-row {
-    display: flex; align-items: flex-end; gap: 8px; flex-wrap: wrap;
-  }
-  .picker-group {
-    display: flex; flex-direction: column; gap: 6px;
-  }
-  .picker-label {
-    font-family: var(--font-body); font-size: 0.7rem; font-weight: 400;
-    color: var(--ink-faint); letter-spacing: 0.08em; text-transform: uppercase;
-    padding-left: 2px;
-  }
-  .picker-field {
-    background: var(--surface-raised); border: 1px solid var(--border);
-    border-radius: var(--r-btn); padding: 10px 12px;
-    color: var(--ink); font-family: var(--font-mono); font-size: 1rem;
-    outline: none; transition: border-color 0.15s, box-shadow 0.15s;
-    -moz-appearance: textfield; appearance: textfield;
-    text-align: center;
-  }
-  .picker-field::-webkit-outer-spin-button,
-  .picker-field::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-  .picker-field:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 2px rgba(0,229,200,0.12);
-  }
-  .picker-field::placeholder { color: var(--ink-faint); }
-  .picker-sep {
-    font-family: var(--font-mono); color: var(--ink-muted);
-    font-size: 1.25rem; padding-bottom: 10px; user-select: none;
-  }
-  .picker-time-sep {
-    font-family: var(--font-mono); color: var(--accent); opacity: 0.7;
-    font-size: 1.25rem; padding-bottom: 10px; user-select: none;
-  }
-  .picker-divider {
-    width: 1px; height: 44px; background: var(--border); margin: 0 6px 0 6px;
-    align-self: flex-end; margin-bottom: 4px;
-  }
-  .picker-btn {
-    background: var(--surface-raised); border: 1px solid var(--border);
-    border-radius: var(--r-btn); padding: 10px 20px; height: 42px;
-    color: var(--ink); font-family: var(--font-display); font-size: 0.875rem;
-    font-weight: 500; cursor: pointer; transition: border-color 0.15s, background 0.15s, color 0.15s;
-    white-space: nowrap; align-self: flex-end;
-  }
-  .picker-btn:hover { border-color: var(--accent); color: var(--accent); }
-  .picker-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-  .picker-status {
-    font-size: 0.8125rem; color: var(--ink-muted);
-    font-family: var(--font-body); margin-top: 12px; min-height: 1.2em;
-  }
-  .picker-status.ok { color: var(--accent); }
-  .picker-status.err { color: var(--danger); }
 
-  /* ── Picker dropdown ─────────────────────────────────────── */
-  .picker-group { position: relative; }
+  .hero__form-row {
+    display: flex; align-items: flex-end;
+    gap: 12px; flex-wrap: wrap; margin-top: 16px;
+  }
+
+  .hero__input-group {
+    display: flex; flex-direction: column; gap: 6px;
+    position: relative;
+  }
+
+  .hero__input {
+    font-family: var(--font-mono);
+    font-size: 1.5rem;
+    width: 56px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--surface-border);
+    color: var(--ink);
+    text-align: center;
+    padding: 4px 0;
+    outline: none;
+    -moz-appearance: textfield; appearance: textfield;
+  }
+  .hero__input::-webkit-outer-spin-button,
+  .hero__input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .hero__input--wide { width: 84px; }
+  .hero__input:focus { border-bottom-color: var(--accent); }
+  .hero__input::placeholder { color: var(--ink-faint); }
+
+  .hero__sep {
+    font-family: var(--font-mono);
+    font-size: 1.5rem;
+    color: var(--ink-faint);
+    padding-bottom: 4px;
+  }
+  .hero__sep--gap { margin: 0 12px; }
+
+  .hero__check-btn {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background: transparent;
+    border: 1px solid var(--surface-border-strong);
+    border-radius: 6px;
+    color: var(--ink);
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+  }
+  .hero__check-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .hero__check-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .picker-error {
+    margin-top: 12px;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    color: var(--state-poor);
+  }
+
+  /* Picker dropdowns */
   .picker-dropdown {
     position: absolute; top: calc(100% + 5px); left: 50%; transform: translateX(-50%);
-    background: #0C1C30; border: 1px solid var(--accent);
+    background: rgba(19, 51, 65, 0.97);
+    border: 1px solid var(--accent);
     border-radius: 8px; z-index: 1000;
     max-height: 192px; overflow-y: auto; overflow-x: hidden;
     min-width: 100%;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,229,200,0.08), 0 0 24px rgba(0,229,200,0.06);
-    scrollbar-width: thin; scrollbar-color: #1A3050 transparent;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+    backdrop-filter: blur(12px);
+    scrollbar-width: thin; scrollbar-color: var(--surface-border) transparent;
   }
   .picker-dropdown::-webkit-scrollbar { width: 3px; }
   .picker-dropdown::-webkit-scrollbar-track { background: transparent; }
-  .picker-dropdown::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .picker-dropdown::-webkit-scrollbar-thumb { background: var(--surface-border); border-radius: 2px; }
   .picker-option {
     padding: 9px 14px; font-family: var(--font-mono); font-size: 0.9rem;
     color: var(--ink-muted); cursor: pointer;
     transition: background 0.1s, color 0.1s;
     text-align: center; white-space: nowrap;
   }
-  .picker-option:hover { background: rgba(0,229,200,0.07); color: var(--ink); }
-  .picker-option.active {
-    color: var(--accent); background: rgba(0,229,200,0.1);
-    font-weight: 500;
-  }
+  .picker-option:hover { background: var(--accent-dim); color: var(--ink); }
+  .picker-option.active { color: var(--accent); background: var(--accent-dim); font-weight: 500; }
 
-  /* Factor Strip */
-  .factor-strip {
-    display: grid; grid-template-columns: repeat(2, 1fr);
-    gap: 12px; margin-bottom: 40px;
+  /* Confidence Gauge */
+  .gauge-wrap {
+    display: flex; flex-direction: column; align-items: center;
+    background: var(--surface); border: 1px solid var(--surface-border);
+    border-radius: 6px; padding: 28px 40px 24px;
+    backdrop-filter: blur(8px); min-width: 200px;
   }
-  @media (min-width: 640px) { .factor-strip { grid-template-columns: repeat(4, 1fr); } }
-
-  .factor-tile {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--r-card); padding: 16px;
-    box-shadow: var(--shadow-card); display: flex; flex-direction: column; gap: 6px;
-    transition: background 0.15s;
+  .gauge-label { display: none; }
+  .gauge-svg { overflow: visible; }
+  .gauge-track { fill: none; stroke: var(--surface-border); stroke-width: 10; stroke-linecap: round; }
+  .gauge-fill {
+    fill: none; stroke: var(--accent); stroke-width: 10; stroke-linecap: round;
+    filter: drop-shadow(0 0 6px rgba(127,245,220,0.5));
+    animation: gauge-fill 1.4s cubic-bezier(0.34,1.56,0.64,1) both;
+    animation-delay: 0.3s;
   }
-  .factor-tile:hover { background: var(--surface-raised); }
-  .factor-icon {
-    font-size: 1.1rem; color: var(--ink-muted); margin-bottom: 2px;
+  .gauge-pct {
+    font-family: var(--font-serif); font-size: 2.2rem; font-weight: 300;
+    fill: var(--ink); text-anchor: middle; dominant-baseline: central;
   }
-  .factor-name {
-    font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase;
-    color: var(--ink-muted); font-family: var(--font-body);
+  .gauge-confidence {
+    font-family: var(--font-mono); font-size: 0.65rem;
+    fill: var(--accent); text-anchor: middle;
   }
-  .factor-value {
-    font-family: var(--font-mono); font-size: 1.2rem; font-weight: 500; color: var(--ink);
-    display: flex; align-items: baseline; gap: 4px;
-  }
-  .factor-unit { font-size: 0.75rem; color: var(--ink-muted); }
-  .factor-impact { font-size: 0.75rem; font-family: var(--font-body); }
-  .factor-sub { font-size: 0.75rem; color: var(--ink-muted); font-family: var(--font-body); }
 
   /* Section heading */
   .section-head {
-    font-family: var(--font-display); font-size: 0.75rem; font-weight: 600;
-    letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-muted);
-    margin-bottom: 16px; display: flex; align-items: center; gap: 10px;
+    font-family: var(--font-mono); font-size: 0.7rem;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ink-muted); margin-bottom: 16px;
+    display: flex; align-items: center; gap: 10px;
   }
   .section-head::after {
-    content: ''; flex: 1; height: 1px; background: var(--border);
+    content: ''; flex: 1; height: 1px; background: var(--surface-border);
+  }
+
+  /* Conditions grid */
+  .conditions-section { margin-bottom: 40px; }
+  .conditions__grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+  }
+  @media (max-width: 900px) { .conditions__grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 480px) { .conditions__grid { grid-template-columns: 1fr; } }
+
+  .conditions__tile {
+    background: var(--surface); border: 1px solid var(--surface-border);
+    border-radius: 6px; padding: 24px; backdrop-filter: blur(8px);
+    display: flex; flex-direction: column;
+  }
+  .conditions__tile-top {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 12px;
+  }
+  .conditions__tile-icon { font-size: 1.1rem; }
+  .conditions__tile-value {
+    font-family: var(--font-serif); font-size: 3.5rem; font-weight: 300;
+    line-height: 1.05; color: var(--ink);
+    display: flex; align-items: baseline;
+    margin-bottom: 0;
+  }
+  .conditions__tile-unit {
+    font-family: var(--font-mono); font-size: 0.85rem;
+    color: var(--ink-muted); margin-left: 4px;
+  }
+  .conditions__tile-sub {
+    margin-top: 8px;
+    font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--ink-muted);
+  }
+  .conditions__tile-impact {
+    font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.1em;
+    text-transform: uppercase; margin-top: 6px;
   }
 
   /* Tide Chart */
+  .chart-section { margin-bottom: 40px; }
   .chart-wrap {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--r-card); padding: 24px;
-    margin-bottom: 40px; box-shadow: var(--shadow-card);
-  }
-  .chart-title {
-    font-family: var(--font-display); font-size: 0.85rem; font-weight: 600;
-    color: var(--ink); margin-bottom: 4px;
-  }
-  .chart-sub {
-    font-size: 0.75rem; color: var(--ink-muted);
-    font-family: var(--font-body); margin-bottom: 20px;
+    background: var(--surface); border: 1px solid var(--surface-border);
+    border-radius: 6px; padding: 24px; backdrop-filter: blur(8px);
   }
 
-  /* Forecast Strip */
+  /* Forecast strip */
+  .forecast-section { margin-bottom: 48px; }
   .forecast-scroll {
-    display: flex; gap: 12px; overflow-x: auto;
-    padding-bottom: 12px; margin-bottom: 48px;
-    scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+    display: flex; gap: 12px; overflow-x: auto; padding-bottom: 12px;
+    scrollbar-width: thin; scrollbar-color: var(--surface-border) transparent;
   }
   .window-card {
-    flex: 0 0 200px; background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--r-card); padding: 20px 18px;
-    box-shadow: var(--shadow-card); cursor: pointer;
+    flex: 0 0 160px; background: var(--surface); border: 1px solid var(--surface-border);
+    border-radius: 6px; padding: 16px; cursor: pointer;
     transition: background 0.15s, border-color 0.15s, transform 0.15s;
-    display: flex; flex-direction: column; gap: 10px;
+    display: flex; flex-direction: column; gap: 8px;
   }
-  .window-card:hover { background: var(--surface-raised); transform: translateY(-2px); }
-  .window-card.active { border-color: var(--accent); box-shadow: var(--shadow-card), var(--shadow-glow); }
+  .window-card:hover { transform: translateY(-2px); border-color: var(--surface-border-strong); }
+  .window-card.active { border-color: var(--accent-line); }
+
   .wc-day {
-    font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase;
-    color: var(--ink-muted); font-family: var(--font-body);
+    font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--ink-muted);
+  }
+  .wc-day--today { color: var(--accent); }
+
+  .wc-confidence-bar {
+    height: 2px; background: var(--surface-border); border-radius: 1px; overflow: hidden;
+  }
+  .wc-confidence-fill { height: 100%; border-radius: 1px; }
+
+  .wc-score {
+    font-family: var(--font-serif); font-size: 2rem; font-weight: 300; line-height: 1;
   }
   .wc-time {
-    font-family: var(--font-display); font-size: 1.1rem; font-weight: 600;
-    color: var(--ink); line-height: 1.2;
+    font-family: var(--font-mono); font-size: 0.7rem;
+    color: var(--ink-muted); line-height: 1.6;
   }
-  .wc-dur { font-size: 0.75rem; color: var(--ink-muted); font-family: var(--font-body); }
-  .wc-score {
-    font-family: var(--font-mono); font-size: 1.6rem; font-weight: 500;
-  }
-  .wc-score-label { font-size: 0.7rem; color: var(--ink-muted); font-family: var(--font-body); }
   .badge {
-    display: inline-block; font-size: 0.7rem; font-weight: 600;
-    font-family: var(--font-display); letter-spacing: 0.06em;
-    text-transform: uppercase; padding: 3px 10px;
-    border-radius: var(--r-badge);
+    display: inline-block; font-size: 0.65rem; font-weight: 500;
+    font-family: var(--font-mono); letter-spacing: 0.1em;
+    text-transform: uppercase; padding: 3px 10px; border-radius: 999px;
   }
 
   /* Detail Panel */
   .detail-panel {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--r-card); padding: 28px;
-    margin-bottom: 40px; box-shadow: var(--shadow-card);
-    animation: fadein 0.35s ease both;
+    background: var(--surface); border: 1px solid var(--surface-border);
+    border-radius: 6px; padding: 28px; margin-bottom: 40px;
+    backdrop-filter: blur(8px); animation: fadein 0.35s ease both;
   }
   .detail-header {
     display: flex; align-items: flex-start; justify-content: space-between;
     margin-bottom: 24px; gap: 16px; flex-wrap: wrap;
   }
+  .detail-meta {
+    font-family: var(--font-mono); font-size: 0.7rem;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ink-muted); margin-bottom: 6px;
+  }
   .detail-title {
-    font-family: var(--font-display); font-size: 1.4rem; font-weight: 700;
+    font-family: var(--font-serif); font-size: 2rem; font-weight: 300;
     color: var(--ink); line-height: 1.2; margin-bottom: 4px;
   }
-  .detail-close {
-    background: none; border: 1px solid var(--border);
-    border-radius: var(--r-badge); padding: 6px 14px;
-    color: var(--ink-muted); font-family: var(--font-body); font-size: 0.8125rem;
-    cursor: pointer; transition: border-color 0.15s, color 0.15s;
+  .detail-sub {
+    font-family: var(--font-mono); font-size: 0.75rem;
+    color: var(--ink-muted); margin-top: 4px;
   }
-  .detail-close:hover { border-color: var(--danger); color: var(--danger); }
+  .detail-close {
+    background: none; border: 1px solid var(--surface-border);
+    border-radius: 6px; padding: 6px 14px;
+    color: var(--ink-muted); font-family: var(--font-mono);
+    font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase;
+    cursor: pointer; transition: border-color 0.15s, color 0.15s; white-space: nowrap;
+  }
+  .detail-close:hover { border-color: var(--state-poor); color: var(--state-poor); }
+
+  .detail-body { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  @media (max-width: 640px) { .detail-body { grid-template-columns: 1fr; } }
+
+  .reasoning-section-label {
+    font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--ink-muted); margin-bottom: 12px;
+  }
   .reasoning-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
   .reasoning-item {
     display: flex; gap: 10px; align-items: flex-start;
     font-size: 0.9375rem; line-height: 1.5; color: var(--ink);
-    font-family: var(--font-body);
+    font-family: var(--font-sans);
   }
   .reasoning-dot {
     flex-shrink: 0; width: 6px; height: 6px; border-radius: 50%;
     background: var(--accent); margin-top: 9px; opacity: 0.8;
   }
 
+  .factor-row {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--surface-strong); border-radius: 6px; padding: 10px 14px;
+  }
+  .factor-row-name {
+    font-family: var(--font-serif); font-size: 1.1rem; font-weight: 400; color: var(--ink);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .factor-row-sub {
+    font-family: var(--font-mono); font-size: 0.7rem;
+    color: var(--ink-faint); margin-left: 4px;
+  }
+  .factor-row-right { display: flex; align-items: center; gap: 8px; }
+  .factor-row-val {
+    font-family: var(--font-mono); font-size: 0.875rem; color: var(--ink);
+  }
+
   /* Footer */
   .footer {
-    border-top: 1px solid var(--border); padding: 24px 0 0;
+    border-top: 1px solid var(--surface-border); padding: 20px 0;
     display: flex; justify-content: space-between; align-items: center;
     gap: 12px; flex-wrap: wrap;
-  }
-  .footer-ts {
-    font-size: 0.75rem; color: var(--ink-faint);
-    font-family: var(--font-mono);
-  }
-  .footer-mission {
-    font-size: 0.75rem; color: var(--ink-faint);
-    font-family: var(--font-body);
   }
 `;
 
@@ -607,37 +708,39 @@ function ConfidenceGauge({ value, color }) {
 /* ─── FACTOR TILE ────────────────────────────────────────────── */
 function FactorTile({ icon, name, value, unit, impact, sub }) {
   return (
-    <div className="factor-tile">
-      <div className="factor-icon">{icon}</div>
-      <div className="factor-name">{name}</div>
-      <div className="factor-value">
-        {value}<span className="factor-unit">{unit}</span>
+    <div className="conditions__tile">
+      <div className="conditions__tile-top">
+        <span className="micro">{name}</span>
+        <span className="conditions__tile-icon">{icon}</span>
       </div>
-      {sub && <div className="factor-sub">{sub}</div>}
-      <div className="factor-impact" style={{ color: impactColor(impact) }}>
-        {impactIcon(impact)} {impact.charAt(0).toUpperCase() + impact.slice(1)}
+      <div className="conditions__tile-value">
+        {value}
+        {unit && <span className="conditions__tile-unit">{unit}</span>}
+      </div>
+      {sub && <div className="conditions__tile-sub">{sub}</div>}
+      <div className="conditions__tile-impact" style={{ color: impactColor(impact) }}>
+        {impactIcon(impact)} — {impact.charAt(0).toUpperCase() + impact.slice(1)}
       </div>
     </div>
   );
 }
 
 /* ─── WINDOW CARD ────────────────────────────────────────────── */
-function WindowCard({ win, active, onClick }) {
+function WindowCard({ win, active, onClick, isToday }) {
   const color = stateColor(win.conditionState);
   const bg = stateBg(win.conditionState);
   return (
     <div className={`window-card${active ? " active" : ""}`} onClick={onClick} role="button" tabIndex={0}>
-      <div className="wc-day">{win.label}</div>
-      <div className="wc-time">
-        {formatTime(win.startsAt)}<br />
-        <span style={{ color: "var(--ink-muted)", fontWeight: 400, fontSize: "0.85rem" }}>
-          → {formatTime(win.endsAt)}
-        </span>
+      <div className={`wc-day${isToday ? " wc-day--today" : ""}`}>{win.label}</div>
+      <div className="wc-confidence-bar">
+        <div className="wc-confidence-fill" style={{ width: `${Math.round(win.confidence * 100)}%`, background: color }} />
       </div>
-      <div className="wc-dur">{windowDuration(win.startsAt, win.endsAt)}</div>
       <div className="wc-score" style={{ color }}>
         {Math.round(win.confidence * 100)}%
-        <span className="wc-score-label" style={{ display: "block" }}>confidence</span>
+      </div>
+      <div className="wc-time">
+        {formatTime(win.startsAt)}<br />
+        → {formatTime(win.endsAt)}
       </div>
       <span className="badge" style={{ background: bg, color }}>{stateLabel(win.conditionState)}</span>
     </div>
@@ -649,9 +752,10 @@ function TideTooltip({ active, payload }) {
   if (!active || !payload?.length) return null;
   return (
     <div style={{
-      background: "var(--surface-raised)", border: "1px solid var(--border)",
+      background: "rgba(19, 51, 65, 0.97)", border: "1px solid var(--surface-border)",
       borderRadius: "var(--r-badge)", padding: "8px 14px",
       fontFamily: "var(--font-mono)", fontSize: "0.8125rem", color: "var(--ink)",
+      backdropFilter: "blur(8px)",
     }}>
       <div style={{ color: "var(--ink-muted)", fontSize: "0.7rem" }}>{payload[0]?.payload?.time}</div>
       <div>{payload[0]?.value?.toFixed(1)} m</div>
@@ -659,8 +763,8 @@ function TideTooltip({ active, payload }) {
   );
 }
 
-/* ─── MAIN APP ───────────────────────────────────────────────── */
-export default function App() {
+/* ─── MAIN ROUTE ─────────────────────────────────────────────── */
+function MainPage() {
   const now = new Date();
   const [pickerDay,   setPickerDay]   = useState(String(now.getDate()).padStart(2, "0"));
   const [pickerMonth, setPickerMonth] = useState(String(now.getMonth() + 1).padStart(2, "0"));
@@ -673,7 +777,6 @@ export default function App() {
   const [data, setData] = useState(null);
   const [queryInfo, setQueryInfo] = useState(null);
   const [error, setError] = useState(null);
-  const styleRef  = useRef(null);
   const pickerRef = useRef(null);
 
   useEffect(() => {
@@ -687,17 +790,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (!document.getElementById("yoursea-styles")) {
-      const el = document.createElement("style");
-      el.id = "yoursea-styles";
-      el.textContent = css;
-      document.head.appendChild(el);
-      styleRef.current = el;
-    }
     document.title = "YOU(R) SEA — Forecast";
-    return () => {
-      if (styleRef.current) styleRef.current.remove();
-    };
   }, []);
 
   const hero = MOCK_FORECAST.windows[0];
@@ -741,249 +834,182 @@ export default function App() {
 
   return (
     <div className="page">
-      {/* TOPBAR */}
-      <header className="topbar reveal reveal-1">
-        <div className="wordmark">
-          YOU<span>(R)</span> SEA
-        </div>
-        <div className="topbar-right">
-          <div className="location-pill">
-            <svg viewBox="0 0 16 16" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M8 1a5 5 0 0 1 5 5c0 4-5 9-5 9S3 10 3 6a5 5 0 0 1 5-5z" />
-              <circle cx="8" cy="6" r="1.5" />
-            </svg>
-            {MOCK_FORECAST.locationName}
-          </div>
-          <div className="location-pill" style={{ color: "var(--ink-muted)" }}>
-            {new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
-          </div>
-        </div>
-      </header>
-
       {/* HERO */}
       <section className="hero reveal reveal-2">
-        <div>
-          <div className="hero-label">Visibility prediction</div>
-          {!data && !loading && (
-            <div className="hero-sub" style={{ marginTop: "12px" }}>
-              Pick a date and time below to see the predicted visibility.
-            </div>
-          )}
-          {loading && (
-            <div className="hero-time" style={{ color: "var(--ink-muted)", fontSize: "2rem" }}>
-              Calculating…
-            </div>
-          )}
-          {data && (
-            <>
-              <div className="hero-time">
-                <span style={{ color: toneColor(data.statusTone) }}>
-                  {Math.round(100 - data.visibilityScore)}%
-                </span>
-                {" "}
-                <span className="badge" style={{
-                  background: toneColor(data.statusTone) + "22",
-                  color: toneColor(data.statusTone),
-                  fontSize: "1rem",
-                  verticalAlign: "middle",
-                  padding: "4px 14px",
-                }}>
-                  {data.statusLabel}
-                </span>
-              </div>
-              <div className="hero-sub">
-                {queryInfo && `For ${queryInfo.date} at ${queryInfo.time}. `}
-                {data.statusTone === "good" && "Conditions look great — solid visibility expected."}
-                {data.statusTone === "marginal" && "Conditions are borderline — check wind and waves before going."}
-                {data.statusTone === "poor" && "Visibility likely low — consider rescheduling."}
-              </div>
-            </>
-          )}
+        <div className="hero__top-label">
+          <span className="hero__dot" />
+          <span className="micro">VISIBILITY CHECK</span>
         </div>
-        <ConfidenceGauge
-          value={data ? (100 - data.visibilityScore) / 100 : 0}
-          color={data ? toneColor(data.statusTone) : "#3a4555"}
-        />
+
+        <div className="hero__main">
+          <div className="hero__left">
+            {loading ? (
+              <>
+                <h1 className="hero__headline hero__headline--placeholder">Calculating…</h1>
+                <div className="hero__state-line">Querying forecast engine…</div>
+              </>
+            ) : data ? (
+              <>
+                <h1 className="hero__headline" style={{ color: toneColor(data.statusTone) }}>
+                  {Math.round(100 - data.visibilityScore)}%
+                </h1>
+                <div className="hero__state-line">
+                  {data.statusLabel.toUpperCase()}
+                  {queryInfo && ` · ${queryInfo.date} at ${queryInfo.time}`}
+                </div>
+              </>
+            ) : (
+              <>
+                <h1 className="hero__headline hero__headline--placeholder">Select a date and time</h1>
+                <div className="hero__state-line">Choose when you want to dive — we'll predict visibility</div>
+              </>
+            )}
+          </div>
+
+          <div className="hero__right">
+            <div className="micro" style={{ textAlign: "center", marginBottom: 8 }}>CONFIDENCE</div>
+            <ConfidenceGauge
+              value={data ? (100 - data.visibilityScore) / 100 : 0}
+              color={data ? toneColor(data.statusTone) : "rgba(244,248,248,0.2)"}
+            />
+          </div>
+        </div>
+
+        <div className="hero__form-card" ref={pickerRef}>
+          <div className="micro">WHEN ARE YOU THINKING?</div>
+          <div className="hero__form-row">
+
+            {/* DAY */}
+            <div className="hero__input-group">
+              <span className="micro">DAY</span>
+              <input className="hero__input" type="number" min="1" max="31"
+                placeholder="DD" value={pickerDay}
+                onChange={e => setPickerDay(e.target.value)}
+                onFocus={() => setPickerOpen("day")} />
+              {pickerOpen === "day" && (
+                <div className="picker-dropdown">
+                  {Array.from({ length: 31 }, (_, i) => i + 1).map(v => {
+                    const val = String(v).padStart(2, "0");
+                    return (
+                      <div key={v} className={`picker-option${pickerDay === val ? " active" : ""}`}
+                        onMouseDown={e => { e.preventDefault(); setPickerDay(val); setPickerOpen(null); }}>
+                        {val}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+            <span className="hero__sep">/</span>
+
+            {/* MONTH */}
+            <div className="hero__input-group">
+              <span className="micro">MONTH</span>
+              <input className="hero__input" type="number" min="1" max="12"
+                placeholder="MM" value={pickerMonth}
+                onChange={e => setPickerMonth(e.target.value)}
+                onFocus={() => setPickerOpen("month")} />
+              {pickerOpen === "month" && (
+                <div className="picker-dropdown">
+                  {["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].map((name, i) => {
+                    const val = String(i + 1).padStart(2, "0");
+                    return (
+                      <div key={i} className={`picker-option${pickerMonth === val ? " active" : ""}`}
+                        onMouseDown={e => { e.preventDefault(); setPickerMonth(val); setPickerOpen(null); }}>
+                        {val} · {name}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+            <span className="hero__sep">/</span>
+
+            {/* YEAR */}
+            <div className="hero__input-group">
+              <span className="micro">YEAR</span>
+              <input className="hero__input hero__input--wide" type="number" min="2024" max="2099"
+                placeholder="YYYY" value={pickerYear}
+                onChange={e => setPickerYear(e.target.value)}
+                onFocus={() => setPickerOpen("year")} />
+              {pickerOpen === "year" && (
+                <div className="picker-dropdown">
+                  {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() + i).map(y => (
+                    <div key={y} className={`picker-option${pickerYear === String(y) ? " active" : ""}`}
+                      onMouseDown={e => { e.preventDefault(); setPickerYear(String(y)); setPickerOpen(null); }}>
+                      {y}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <span className="hero__sep hero__sep--gap">|</span>
+
+            {/* HOUR */}
+            <div className="hero__input-group">
+              <span className="micro">HOUR</span>
+              <input className="hero__input" type="number" min="0" max="23"
+                placeholder="HH" value={pickerHour}
+                onChange={e => setPickerHour(e.target.value)}
+                onFocus={() => setPickerOpen("hour")} />
+              {pickerOpen === "hour" && (
+                <div className="picker-dropdown">
+                  {Array.from({ length: 24 }, (_, i) => i).map(h => {
+                    const val = String(h).padStart(2, "0");
+                    return (
+                      <div key={h} className={`picker-option${pickerHour === val ? " active" : ""}`}
+                        onMouseDown={e => { e.preventDefault(); setPickerHour(val); setPickerOpen(null); }}>
+                        {val}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+            <span className="hero__sep">:</span>
+
+            {/* MINUTE */}
+            <div className="hero__input-group">
+              <span className="micro">MIN</span>
+              <input className="hero__input" type="number" min="0" max="59"
+                placeholder="MM" value={pickerMin}
+                onChange={e => setPickerMin(e.target.value)}
+                onFocus={() => setPickerOpen("min")} />
+              {pickerOpen === "min" && (
+                <div className="picker-dropdown">
+                  {Array.from({ length: 12 }, (_, i) => i * 5).map(m => {
+                    const val = String(m).padStart(2, "0");
+                    return (
+                      <div key={m} className={`picker-option${pickerMin === val ? " active" : ""}`}
+                        onMouseDown={e => { e.preventDefault(); setPickerMin(val); setPickerOpen(null); }}>
+                        {val}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            <button className="hero__check-btn" onClick={handleCheck} disabled={loading}>
+              {loading ? "Checking…" : "Check conditions"}
+            </button>
+          </div>
+          {error && <div className="picker-error">{error}</div>}
+        </div>
       </section>
 
-      {/* DATE PICKER / API FORM */}
-      <div className="picker-section reveal reveal-2" style={{ animationDelay: "0.2s" }} ref={pickerRef}>
-        <div className="picker-title">Check a specific time window</div>
-        <div className="picker-row">
-
-          {/* DAY */}
-          <div className="picker-group">
-            <span className="picker-label">Day</span>
-            <input className="picker-field" type="number" min="1" max="31"
-              style={{ width: "56px" }} placeholder="DD"
-              value={pickerDay}
-              onChange={e => setPickerDay(e.target.value)}
-              onFocus={() => setPickerOpen("day")} />
-            {pickerOpen === "day" && (
-              <div className="picker-dropdown">
-                {Array.from({ length: 31 }, (_, i) => i + 1).map(v => {
-                  const val = String(v).padStart(2, "0");
-                  return (
-                    <div key={v} className={`picker-option${pickerDay === val ? " active" : ""}`}
-                      onMouseDown={e => { e.preventDefault(); setPickerDay(val); setPickerOpen(null); }}>
-                      {val}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-          <span className="picker-sep">/</span>
-
-          {/* MONTH */}
-          <div className="picker-group">
-            <span className="picker-label">Month</span>
-            <input className="picker-field" type="number" min="1" max="12"
-              style={{ width: "56px" }} placeholder="MM"
-              value={pickerMonth}
-              onChange={e => setPickerMonth(e.target.value)}
-              onFocus={() => setPickerOpen("month")} />
-            {pickerOpen === "month" && (
-              <div className="picker-dropdown">
-                {["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].map((name, i) => {
-                  const val = String(i + 1).padStart(2, "0");
-                  return (
-                    <div key={i} className={`picker-option${pickerMonth === val ? " active" : ""}`}
-                      onMouseDown={e => { e.preventDefault(); setPickerMonth(val); setPickerOpen(null); }}>
-                      {val} · {name}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-          <span className="picker-sep">/</span>
-
-          {/* YEAR */}
-          <div className="picker-group">
-            <span className="picker-label">Year</span>
-            <input className="picker-field" type="number" min="2024" max="2099"
-              style={{ width: "80px" }} placeholder="YYYY"
-              value={pickerYear}
-              onChange={e => setPickerYear(e.target.value)}
-              onFocus={() => setPickerOpen("year")} />
-            {pickerOpen === "year" && (
-              <div className="picker-dropdown">
-                {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() + i).map(y => (
-                  <div key={y} className={`picker-option${pickerYear === String(y) ? " active" : ""}`}
-                    onMouseDown={e => { e.preventDefault(); setPickerYear(String(y)); setPickerOpen(null); }}>
-                    {y}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="picker-divider" />
-
-          {/* HOUR */}
-          <div className="picker-group">
-            <span className="picker-label">Hour</span>
-            <input className="picker-field" type="number" min="0" max="23"
-              style={{ width: "56px" }} placeholder="HH"
-              value={pickerHour}
-              onChange={e => setPickerHour(e.target.value)}
-              onFocus={() => setPickerOpen("hour")} />
-            {pickerOpen === "hour" && (
-              <div className="picker-dropdown">
-                {Array.from({ length: 24 }, (_, i) => i).map(h => {
-                  const val = String(h).padStart(2, "0");
-                  return (
-                    <div key={h} className={`picker-option${pickerHour === val ? " active" : ""}`}
-                      onMouseDown={e => { e.preventDefault(); setPickerHour(val); setPickerOpen(null); }}>
-                      {val}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-          <span className="picker-time-sep">:</span>
-
-          {/* MINUTE */}
-          <div className="picker-group">
-            <span className="picker-label">Min</span>
-            <input className="picker-field" type="number" min="0" max="59"
-              style={{ width: "56px" }} placeholder="MM"
-              value={pickerMin}
-              onChange={e => setPickerMin(e.target.value)}
-              onFocus={() => setPickerOpen("min")} />
-            {pickerOpen === "min" && (
-              <div className="picker-dropdown">
-                {Array.from({ length: 12 }, (_, i) => i * 5).map(m => {
-                  const val = String(m).padStart(2, "0");
-                  return (
-                    <div key={m} className={`picker-option${pickerMin === val ? " active" : ""}`}
-                      onMouseDown={e => { e.preventDefault(); setPickerMin(val); setPickerOpen(null); }}>
-                      {val}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          <button className="picker-btn" onClick={handleCheck} disabled={loading}>
-            {loading ? "Checking…" : "Check conditions"}
-          </button>
-        </div>
-        {error && (
-          <div className="picker-status err">{error}</div>
-        )}
-        {loading && (
-          <div className="picker-status">Querying forecast engine…</div>
-        )}
-        {data && queryInfo && (
-          <div style={{
-            marginTop: "16px",
-            padding: "16px 20px",
-            borderRadius: "8px",
-            borderLeft: `4px solid ${toneColor(data.statusTone)}`,
-            background: "rgba(255,255,255,0.04)",
-            display: "flex",
-            alignItems: "center",
-            gap: "24px",
-            animation: "fadein 0.4s ease both",
-          }}>
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", minWidth: "64px" }}>
-              <span style={{
-                fontSize: "2rem", fontWeight: 700, fontFamily: "var(--font-display)",
-                color: toneColor(data.statusTone), lineHeight: 1,
-              }}>
-                {Math.round(100 - data.visibilityScore)}%
-              </span>
-              <span style={{
-                fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: "0.05em",
-                color: toneColor(data.statusTone), marginTop: "4px",
-              }}>
-                {data.statusLabel}
-              </span>
-            </div>
-            <div style={{ flex: 1, fontSize: "0.875rem", opacity: 0.85, lineHeight: 1.5, color: "var(--ink)" }}>
-              {data.statusTone === "good" && `Predicted visibility is good for ${queryInfo.date} at ${queryInfo.time}.`}
-              {data.statusTone === "marginal" && `Conditions are borderline for ${queryInfo.date} at ${queryInfo.time}. Worth a closer look.`}
-              {data.statusTone === "poor" && `Low visibility expected for ${queryInfo.date} at ${queryInfo.time}. Not recommended.`}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* FACTOR STRIP */}
-      <div className="reveal reveal-3">
+      {/* CONDITIONS NOW */}
+      <div className="conditions-section reveal reveal-3">
         <div className="section-head">
           {data ? "Conditions for the selected time" : "Conditions now"}
         </div>
-        <div className="factor-strip">
+        <div className="conditions__grid">
           <FactorTile
             icon="🌊"
             name="Tide"
             value={data?.features?.nextTideHeightM != null ? data.features.nextTideHeightM.toFixed(1) : "—"}
-            unit={data?.features?.nextTideHeightM != null ? " m" : ""}
+            unit={data?.features?.nextTideHeightM != null ? "m" : ""}
             impact="neutral"
             sub={data?.features?.nextTideType ?? "—"}
           />
@@ -991,14 +1017,14 @@ export default function App() {
             icon="💨"
             name="Wind"
             value={data?.features?.windSpeedKmh != null ? Math.round(data.features.windSpeedKmh) : "—"}
-            unit={data?.features?.windSpeedKmh != null ? " km/h" : ""}
+            unit={data?.features?.windSpeedKmh != null ? "km/h" : ""}
             impact="neutral"
           />
           <FactorTile
             icon="🌡"
             name="Water temp"
             value={data?.features?.waterTemperatureC != null ? Math.round(data.features.waterTemperatureC) : "—"}
-            unit={data?.features?.waterTemperatureC != null ? " °C" : ""}
+            unit={data?.features?.waterTemperatureC != null ? "°C" : ""}
             impact="neutral"
           />
           <FactorTile
@@ -1012,46 +1038,44 @@ export default function App() {
       </div>
 
       {/* TIDE CHART */}
-      <div className="reveal reveal-4">
-        <div className="section-head">Tide curve — today</div>
+      <div className="chart-section reveal reveal-4">
+        <div className="section-head">Tide curve / today</div>
         <div className="chart-wrap">
-          <div className="chart-title">Tidal level · 24-hour forecast</div>
-          <div className="chart-sub">
+          <div className="micro" style={{ marginBottom: 20 }}>
             Optimal window {formatTime(hero.startsAt)} – {formatTime(hero.endsAt)} highlighted
           </div>
           <ResponsiveContainer width="100%" height={200}>
             <AreaChart data={TIDE_CURVE} margin={{ top: 10, right: 16, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="tideGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#00E5C8" stopOpacity={0.25} />
-                  <stop offset="95%" stopColor="#00E5C8" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#7FF5DC" stopOpacity={0.25} />
+                  <stop offset="95%" stopColor="#7FF5DC" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <XAxis
                 dataKey="time"
-                tick={{ fill: "#6B8FA8", fontSize: 11, fontFamily: "IBM Plex Mono" }}
+                tick={{ fill: "rgba(244,248,248,0.4)", fontSize: 11, fontFamily: "IBM Plex Mono" }}
                 tickLine={false}
-                axisLine={{ stroke: "#1A3050" }}
+                axisLine={{ stroke: "rgba(255,255,255,0.12)" }}
                 interval={2}
               />
               <YAxis
-                tick={{ fill: "#6B8FA8", fontSize: 11, fontFamily: "IBM Plex Mono" }}
+                tick={{ fill: "rgba(244,248,248,0.4)", fontSize: 11, fontFamily: "IBM Plex Mono" }}
                 tickLine={false}
                 axisLine={false}
                 tickFormatter={(v) => `${v}m`}
               />
               <Tooltip content={<TideTooltip />} />
-              {/* Optimal window band */}
-              <ReferenceLine x="14:00" stroke="rgba(0,229,200,0.3)" strokeWidth={40} />
-              <ReferenceLine x="16:00" stroke="rgba(0,229,200,0.12)" strokeWidth={40} />
+              <ReferenceLine x="14:00" stroke="rgba(127,245,220,0.3)" strokeWidth={40} />
+              <ReferenceLine x="16:00" stroke="rgba(127,245,220,0.12)" strokeWidth={40} />
               <Area
                 type="monotone"
                 dataKey="level"
-                stroke="#00E5C8"
+                stroke="#7FF5DC"
                 strokeWidth={2}
                 fill="url(#tideGrad)"
                 dot={false}
-                activeDot={{ r: 4, fill: "#00E5C8", stroke: "none" }}
+                activeDot={{ r: 4, fill: "#7FF5DC", stroke: "none" }}
               />
             </AreaChart>
           </ResponsiveContainer>
@@ -1059,14 +1083,15 @@ export default function App() {
       </div>
 
       {/* FORECAST STRIP */}
-      <div className="reveal reveal-5">
+      <div className="forecast-section reveal reveal-5">
         <div className="section-head">Coming up</div>
         <div className="forecast-scroll">
-          {MOCK_FORECAST.windows.map((w) => (
+          {MOCK_FORECAST.windows.map((w, i) => (
             <WindowCard
               key={w.id}
               win={w}
               active={selectedWin === w.id}
+              isToday={i === 0}
               onClick={() => setSelectedWin(selectedWin === w.id ? null : w.id)}
             />
           ))}
@@ -1078,13 +1103,11 @@ export default function App() {
         <div className="detail-panel">
           <div className="detail-header">
             <div>
-              <div style={{ fontSize: "0.75rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--ink-muted)", marginBottom: "6px" }}>
-                {selected.label} · Window detail
-              </div>
+              <div className="detail-meta">{selected.label} · Window detail</div>
               <div className="detail-title">
                 {formatTime(selected.startsAt)} → {formatTime(selected.endsAt)}
               </div>
-              <div style={{ fontSize: "0.875rem", color: "var(--ink-muted)", marginTop: "4px" }}>
+              <div className="detail-sub">
                 {windowDuration(selected.startsAt, selected.endsAt)} ·{" "}
                 Visibility {selected.visibilityScore.toFixed(1)} / 10 ·{" "}
                 <span style={{ color: stateColor(selected.conditionState) }}>
@@ -1097,11 +1120,9 @@ export default function App() {
             </button>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px", flexWrap: "wrap" }}>
+          <div className="detail-body">
             <div>
-              <div style={{ fontSize: "0.75rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--ink-muted)", marginBottom: "12px" }}>
-                Why we think this
-              </div>
+              <div className="reasoning-section-label">Why we think this</div>
               <ul className="reasoning-list">
                 {selected.reasoning.map((r, i) => (
                   <li key={i} className="reasoning-item">
@@ -1118,17 +1139,13 @@ export default function App() {
                 { icon: "🌡", name: "Water temp", f: selected.factors.waterTemp, val: `${Math.round(selected.factors.waterTemp.value)}°C` },
                 { icon: "🌕", name: "Moon", f: selected.factors.moonDistance, val: `${Math.round(selected.factors.moonDistance.value / 1000)}k km`, sub: selected.factors.moonDistance.phase },
               ].map(({ icon, name, f, val, sub }) => (
-                <div key={name} style={{
-                  display: "flex", alignItems: "center", justifyContent: "space-between",
-                  background: "var(--surface-raised)", borderRadius: "var(--r-badge)",
-                  padding: "10px 14px",
-                }}>
-                  <span style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.875rem", color: "var(--ink-muted)" }}>
+                <div key={name} className="factor-row">
+                  <span className="factor-row-name">
                     {icon} {name}
-                    {sub && <span style={{ fontSize: "0.75rem", color: "var(--ink-faint)" }}>· {sub}</span>}
+                    {sub && <span className="factor-row-sub">· {sub}</span>}
                   </span>
-                  <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.875rem" }}>{val}</span>
+                  <span className="factor-row-right">
+                    <span className="factor-row-val">{val}</span>
                     <span style={{ fontSize: "0.75rem", color: impactColor(f.impact) }}>
                       {impactIcon(f.impact)}
                     </span>
@@ -1142,13 +1159,76 @@ export default function App() {
 
       {/* FOOTER */}
       <footer className="footer">
-        <div className="footer-ts">
+        <span className="micro">
           Last updated {new Date(MOCK_FORECAST.generatedAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
-        </div>
-        <div className="footer-mission">
-          Removing the guesswork from underwater viewing · Sea Oasis
-        </div>
+        </span>
+        <span className="micro">
+          Removing the guesswork from underwater viewing · {MOCK_FORECAST.locationName}
+        </span>
       </footer>
+
     </div>
+  );
+}
+
+function DashboardRoute() {
+  useEffect(() => {
+    document.title = "YOU(R) SEA — Dashboard";
+  }, []);
+
+  return <Dashboard />;
+}
+
+function Shell() {
+  useEffect(() => {
+    if (!document.getElementById("yoursea-styles")) {
+      const el = document.createElement("style");
+      el.id = "yoursea-styles";
+      el.textContent = css;
+      document.head.appendChild(el);
+    }
+  }, []);
+
+  return (
+    <>
+      <div className="app-shell">
+        <header className="topbar reveal reveal-1">
+          <div className="wordmark">
+            You<sup className="wordmark-r">(R)</sup> Sea
+          </div>
+          <div className="topbar-right">
+            <nav className="route-nav" aria-label="Primary navigation">
+              <NavLink className="route-link" to="/main">
+                Predict
+              </NavLink>
+              <NavLink className="route-link" to="/dashboard">
+                Dashboard
+              </NavLink>
+            </nav>
+            <div className="location-pill">
+              <span className="location-dot" />
+              · {MOCK_FORECAST.locationName}
+            </div>
+            <div className="date-pill">
+              {new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+            </div>
+          </div>
+        </header>
+      </div>
+
+      <Routes>
+        <Route path="/" element={<Navigate to="/main" replace />} />
+        <Route path="/main" element={<MainPage />} />
+        <Route path="/dashboard" element={<DashboardRoute />} />
+      </Routes>
+    </>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Shell />
+    </BrowserRouter>
   );
 }

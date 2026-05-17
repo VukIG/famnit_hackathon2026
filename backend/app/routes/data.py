@@ -1,11 +1,14 @@
 """Endpoints for fetching oceanographic data from Copernicus."""
 from __future__ import annotations
 
+import csv
 import logging
 from datetime import datetime
+from pathlib import Path
 
 from fastapi import APIRouter, HTTPException
 
+from app.config import settings
 from app.schemas import CopernicusFetchRequest, CopernicusFetchResponse
 from app.services import copernicus_service, firebase_service, storage_service
 
@@ -64,3 +67,51 @@ def fetch_copernicus(req: CopernicusFetchRequest) -> CopernicusFetchResponse:
         record=record,
         warnings=warnings,
     )
+
+
+@router.get("/latest")
+def get_latest_satellite() -> dict:
+    """Return the most recently saved Copernicus satellite record."""
+    data_dir = Path(settings.data_dir)
+    files = sorted(data_dir.glob("fetches_*.csv"), reverse=True)
+    if not files:
+        raise HTTPException(status_code=404, detail="No satellite data available yet")
+
+    with files[0].open("r", encoding="utf-8") as f:
+        rows = list(csv.DictReader(f))
+
+    if not rows:
+        raise HTTPException(status_code=404, detail="No satellite records in latest file")
+
+    last = rows[-1]
+
+    def _f(v: str | None) -> float | None:
+        if v in (None, "", "None", "nan"):
+            return None
+        try:
+            return float(v)
+        except (ValueError, TypeError):
+            return None
+
+    return {
+        "date": last.get("date"),
+        "time": last.get("time"),
+        "latitude": _f(last.get("latitude")),
+        "longitude": _f(last.get("longitude")),
+        "depth_min_m": _f(last.get("depth_min_m")),
+        "depth_max_m": _f(last.get("depth_max_m")),
+        "uo": _f(last.get("uo")),
+        "vo": _f(last.get("vo")),
+        "current_speed": _f(last.get("current_speed")),
+        "thetao": _f(last.get("thetao")),
+        "so": _f(last.get("so")),
+        "zos": _f(last.get("zos")),
+        "mlotst": _f(last.get("mlotst")),
+        "TUR": _f(last.get("TUR")),
+        "SPM": _f(last.get("SPM")),
+        "CHL": _f(last.get("CHL")),
+        "VHM0": _f(last.get("VHM0")),
+        "VTM10": _f(last.get("VTM10")),
+        "VHM0_WW": _f(last.get("VHM0_WW")),
+        "VHM0_SW1": _f(last.get("VHM0_SW1")),
+    }

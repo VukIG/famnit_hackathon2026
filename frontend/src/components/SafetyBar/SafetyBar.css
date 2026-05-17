@@ -1,0 +1,25 @@
+.safety-bar__head {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.safety-bar__pct {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  color: var(--accent);
+}
+.safety-bar__track {
+  height: 4px;
+  background: var(--surface-border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.safety-bar__fill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.4s ease;
+}
+.safety-bar__sub {
+  margin-top: 6px;
+  color: var(--ink-faint);
+}
