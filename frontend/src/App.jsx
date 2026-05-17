@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { BrowserRouter, Navigate, NavLink, Route, Routes } from "react-router-dom";
 import {
   AreaChart,
   Area,
@@ -8,6 +9,7 @@ import {
   ReferenceLine,
   ResponsiveContainer,
 } from "recharts";
+import { Dashboard } from "./Dashboard.jsx";
 
 /* ─── MOCK DATA ──────────────────────────────────────────────── */
 const MOCK_FORECAST = {
@@ -265,14 +267,18 @@ const css = `
   .reveal-5 { animation-delay: 0.56s; }
 
   /* Layout */
+  .app-shell { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
   .page { max-width: 1200px; margin: 0 auto; padding: 0 24px 64px; }
-  @media (min-width: 768px) { .page { padding: 0 48px 64px; } }
+  @media (min-width: 768px) {
+    .app-shell { padding: 0 48px; }
+    .page { padding: 0 48px 64px; }
+  }
 
   /* Header */
   .topbar {
     display: flex; align-items: center; justify-content: space-between;
     padding: 20px 0 24px; border-bottom: 1px solid var(--surface-border);
-    margin-bottom: 48px; gap: 16px; flex-wrap: wrap;
+    margin-bottom: 0; gap: 16px; flex-wrap: wrap;
   }
   .wordmark {
     font-family: var(--font-serif);
@@ -289,6 +295,28 @@ const css = `
     font-weight: 400;
   }
   .topbar-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .route-nav {
+    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+    padding: 4px;
+    background: var(--surface);
+    border: 1px solid var(--surface-border);
+    border-radius: 8px;
+    backdrop-filter: blur(8px);
+  }
+  .route-link {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-height: 34px; padding: 0 14px;
+    border-radius: 6px;
+    color: var(--ink-muted);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .route-link:hover { color: var(--ink); background: var(--surface-strong); }
+  .route-link.active { color: var(--accent); background: var(--accent-dim); }
   .location-pill, .date-pill {
     display: flex; align-items: center; gap: 6px;
     background: var(--surface); border: 1px solid var(--surface-border);
@@ -735,8 +763,8 @@ function TideTooltip({ active, payload }) {
   );
 }
 
-/* ─── MAIN APP ───────────────────────────────────────────────── */
-export default function App() {
+/* ─── MAIN ROUTE ─────────────────────────────────────────────── */
+function MainPage() {
   const now = new Date();
   const [pickerDay,   setPickerDay]   = useState(String(now.getDate()).padStart(2, "0"));
   const [pickerMonth, setPickerMonth] = useState(String(now.getMonth() + 1).padStart(2, "0"));
@@ -749,7 +777,6 @@ export default function App() {
   const [data, setData] = useState(null);
   const [queryInfo, setQueryInfo] = useState(null);
   const [error, setError] = useState(null);
-  const styleRef  = useRef(null);
   const pickerRef = useRef(null);
 
   useEffect(() => {
@@ -763,17 +790,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (!document.getElementById("yoursea-styles")) {
-      const el = document.createElement("style");
-      el.id = "yoursea-styles";
-      el.textContent = css;
-      document.head.appendChild(el);
-      styleRef.current = el;
-    }
     document.title = "YOU(R) SEA — Forecast";
-    return () => {
-      if (styleRef.current) styleRef.current.remove();
-    };
   }, []);
 
   const hero = MOCK_FORECAST.windows[0];
@@ -817,23 +834,6 @@ export default function App() {
 
   return (
     <div className="page">
-
-      {/* HEADER */}
-      <header className="topbar reveal reveal-1">
-        <div className="wordmark">
-          You<sup className="wordmark-r">(R)</sup> Sea
-        </div>
-        <div className="topbar-right">
-          <div className="location-pill">
-            <span className="location-dot" />
-            · {MOCK_FORECAST.locationName}
-          </div>
-          <div className="date-pill">
-            {new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
-          </div>
-        </div>
-      </header>
-
       {/* HERO */}
       <section className="hero reveal reveal-2">
         <div className="hero__top-label">
@@ -1168,5 +1168,67 @@ export default function App() {
       </footer>
 
     </div>
+  );
+}
+
+function DashboardRoute() {
+  useEffect(() => {
+    document.title = "YOU(R) SEA — Dashboard";
+  }, []);
+
+  return <Dashboard />;
+}
+
+function Shell() {
+  useEffect(() => {
+    if (!document.getElementById("yoursea-styles")) {
+      const el = document.createElement("style");
+      el.id = "yoursea-styles";
+      el.textContent = css;
+      document.head.appendChild(el);
+    }
+  }, []);
+
+  return (
+    <>
+      <div className="app-shell">
+        <header className="topbar reveal reveal-1">
+          <div className="wordmark">
+            You<sup className="wordmark-r">(R)</sup> Sea
+          </div>
+          <div className="topbar-right">
+            <nav className="route-nav" aria-label="Primary navigation">
+              <NavLink className="route-link" to="/main">
+                Main
+              </NavLink>
+              <NavLink className="route-link" to="/dashboard">
+                Dashboard
+              </NavLink>
+            </nav>
+            <div className="location-pill">
+              <span className="location-dot" />
+              · {MOCK_FORECAST.locationName}
+            </div>
+            <div className="date-pill">
+              {new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+            </div>
+          </div>
+        </header>
+      </div>
+
+      <Routes>
+        <Route path="/" element={<Navigate to="/main" replace />} />
+        <Route path="/main" element={<MainPage />} />
+        <Route path="/dashboard" element={<DashboardRoute />} />
+      </Routes>
+    </>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Shell />
+    </BrowserRouter>
   );
 }
