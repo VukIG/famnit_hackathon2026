@@ -1,0 +1,9 @@
+.footer {
+  border-top: 1px solid var(--color-hairline);
+  padding: 24px var(--section-px) 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}

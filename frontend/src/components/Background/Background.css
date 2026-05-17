@@ -1,0 +1,40 @@
+.background {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(180deg,
+    #4FB8C9 0%,
+    #2C7E96 8%,
+    #19587A 20%,
+    #0F3F5E 40%,
+    #0A2D44 62%,
+    #07203A 80%,
+    #061827 100%
+  );
+  overflow: hidden;
+}
+
+.background__shaft {
+  position: absolute;
+  top: -10%;
+  width: 2px;
+  height: 120%;
+  background: rgba(255, 255, 255, 0.35);
+  transform-origin: top center;
+}
+
+.background__shaft--1 {
+  left: 18%;
+  animation: shaftDrift 11s ease-in-out infinite;
+  animation-delay: 0s;
+}
+.background__shaft--2 {
+  left: 45%;
+  animation: shaftDrift 17s ease-in-out infinite;
+  animation-delay: -4s;
+}
+.background__shaft--3 {
+  left: 72%;
+  animation: shaftDrift 23s ease-in-out infinite;
+  animation-delay: -9s;
+}

@@ -1,0 +1,44 @@
+.confidence-dial {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.confidence-dial__svg {
+  overflow: visible;
+}
+
+.confidence-dial__track {
+  fill: none;
+  stroke: var(--color-hairline);
+  stroke-width: 8;
+  stroke-linecap: round;
+}
+
+.confidence-dial__fill {
+  fill: none;
+  stroke: var(--color-bio);
+  stroke-width: 8;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 8px rgba(95,243,214,0.6));
+  animation: gauge-fill 1.4s cubic-bezier(0.34,1.56,0.64,1) both;
+  animation-delay: 0.3s;
+}
+
+.confidence-dial__pct {
+  font-family: var(--font-display);
+  font-weight: 300;
+  fill: var(--color-ink);
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.confidence-dial__label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  fill: var(--color-bio);
+  text-anchor: middle;
+}

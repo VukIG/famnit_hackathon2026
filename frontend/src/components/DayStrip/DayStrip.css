@@ -1,0 +1,74 @@
+.day-strip {
+  padding: var(--section-py) var(--section-px);
+}
+
+.day-strip__heading {
+  margin-bottom: 20px;
+}
+
+.day-strip__scroll {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-hairline-strong) transparent;
+}
+.day-strip__scroll::-webkit-scrollbar { height: 3px; }
+.day-strip__scroll::-webkit-scrollbar-track { background: transparent; }
+.day-strip__scroll::-webkit-scrollbar-thumb { background: var(--color-hairline-strong); border-radius: 2px; }
+
+.day-strip__card {
+  flex: 0 0 auto;
+  min-width: 150px;
+  background: var(--card-bg);
+  border: var(--card-border);
+  border-radius: var(--card-radius);
+  padding: 20px 16px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+.day-strip__card:hover { background: rgba(255,255,255,0.025); transform: translateY(-2px); }
+.day-strip__card.active { border-color: var(--color-bio); }
+
+.day-strip__day {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: 1.5rem;
+  letter-spacing: -0.01em;
+}
+.day-strip__day--today { color: var(--color-bio); }
+
+.day-strip__bar-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  height: 110px;
+}
+
+.day-strip__bar {
+  width: 6px;
+  border-radius: 3px;
+  transition: height 0.3s ease;
+}
+
+.day-strip__range {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--color-ink-muted);
+  line-height: 1.5;
+}
+
+.day-strip__badge {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  padding: 3px 10px;
+  border-radius: 20px;
+}

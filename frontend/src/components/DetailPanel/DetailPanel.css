@@ -1,0 +1,125 @@
+.detail-panel {
+  margin: 0 var(--section-px) var(--section-py);
+  background: var(--card-bg);
+  border: var(--card-border);
+  border-radius: var(--card-radius);
+  padding: var(--card-padding);
+  animation: fadeUp 0.35s ease both;
+}
+
+.detail-panel__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.detail-panel__title {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 300;
+  color: var(--color-ink);
+  line-height: 1.2;
+  margin-bottom: 4px;
+  letter-spacing: -0.01em;
+}
+
+.detail-panel__close {
+  background: none;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--card-radius);
+  padding: 6px 14px;
+  color: var(--color-ink-muted);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.detail-panel__close:hover { border-color: var(--color-nogo); color: var(--color-nogo); }
+
+.detail-panel__body {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+@media (min-width: 640px) {
+  .detail-panel__body {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.detail-panel__section-label {
+  margin-bottom: 12px;
+}
+
+.reasoning-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.reasoning-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+}
+
+.reasoning-dot {
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-bio);
+  margin-top: 9px;
+  opacity: 0.8;
+}
+
+.detail-panel__factors {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detail-panel__factor-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.015);
+  border-radius: var(--card-radius);
+  padding: 10px 14px;
+}
+
+.detail-panel__factor-name {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  color: var(--color-ink-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.detail-panel__factor-sub {
+  font-size: 0.75rem;
+  color: var(--color-ink-faint);
+}
+
+.detail-panel__factor-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.detail-panel__factor-val {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  color: var(--color-ink);
+}

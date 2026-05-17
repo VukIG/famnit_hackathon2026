@@ -1,0 +1,85 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&family=IBM+Plex+Mono:wght@300;400;500&display=swap');
+
+:root {
+  --color-abyss:      #061827;
+  --color-marine:     #0F3F5E;
+  --color-surface:    #0A2D44;
+  --color-sunlit:     #4FB8C9;
+  --color-bio:        #5FF3D6;
+  --color-warn:       #E6B454;
+  --color-nogo:       #C46B6B;
+
+  --color-ink:        #E6F0F4;
+  --color-ink-muted:  rgba(180, 210, 220, 0.55);
+  --color-ink-faint:  rgba(180, 210, 220, 0.18);
+
+  --color-hairline:        rgba(180, 210, 220, 0.10);
+  --color-hairline-strong: rgba(180, 210, 220, 0.22);
+
+  --font-display: 'Fraunces', serif;
+  --font-mono:    'IBM Plex Mono', monospace;
+
+  --section-px:    clamp(24px, 4vw, 48px);
+  --section-py:    clamp(32px, 4vw, 48px);
+  --card-radius:   8px;
+  --card-bg:       rgba(255, 255, 255, 0.012);
+  --card-border:   1px solid var(--color-hairline);
+  --card-padding:  24px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--color-abyss);
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--color-abyss); }
+::-webkit-scrollbar-thumb { background: var(--color-hairline-strong); border-radius: 3px; }
+
+.micro {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: var(--color-ink-muted);
+}
+.micro-bio { color: var(--color-bio); }
+
+.display {
+  font-family: var(--font-display);
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  font-optical-sizing: auto;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.reveal { animation: fadeUp 0.7s ease both; }
+.reveal-1 { animation-delay: 0.05s; }
+.reveal-2 { animation-delay: 0.18s; }
+.reveal-3 { animation-delay: 0.32s; }
+.reveal-4 { animation-delay: 0.48s; }
+.reveal-5 { animation-delay: 0.64s; }
+
+@keyframes bioPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(95,243,214,0.55); }
+  50%       { box-shadow: 0 0 0 5px rgba(95,243,214,0); }
+}
+.bio-dot { animation: bioPulse 2.6s ease-in-out infinite; }
+
+@keyframes shaftDrift {
+  0%   { transform: translateX(-4%) skewX(-8deg); opacity: 0.18; }
+  50%  { transform: translateX(2%)  skewX(-6deg); opacity: 0.28; }
+  100% { transform: translateX(-4%) skewX(-8deg); opacity: 0.18; }
+}
+
+@keyframes gauge-fill {
+  from { stroke-dashoffset: 440; }
+}
