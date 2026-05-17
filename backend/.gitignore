@@ -12,3 +12,5 @@ plan*
 .tide_cache.json
 dataset/
 requirements.txt
+*.csv
+*.nc
