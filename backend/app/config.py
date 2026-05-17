@@ -9,7 +9,25 @@ class Settings(BaseSettings):
     worldtides_api_key: str = ""
     site_depth_m: float = 22.0
 
-    model_config = SettingsConfigDict(env_file=".env")
+    # --- Copernicus Marine ---
+    copernicusmarine_service_username: str = ""
+    copernicusmarine_service_password: str = ""
+
+    # --- Firebase RTDB ---
+    firebase_db_url: str = ""
+    firebase_db_auth: str = ""
+
+    # --- Local data storage ---
+    data_dir: str = "data/copernicus"
+
+    # --- Fixed expedition site for Copernicus queries (Cape Madona / Piran) ---
+    site_latitude: float = 45.52
+    site_longitude: float = 13.57
+    site_depth_min: float = 18.0
+    site_depth_max: float = 22.0
+    site_bbox_pad: float = 0.04
+
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
 settings = Settings()

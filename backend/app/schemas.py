@@ -59,3 +59,34 @@ class PredictionResponse(CamelModel):
     visibility_score: float
     status_label: str
     status_tone: str
+
+
+class CopernicusFetchRequest(CamelModel):
+    date: str  # YYYY-MM-DD
+    time: str  # HH:MM
+
+    @field_validator("date")
+    @classmethod
+    def validate_date(cls, v: str) -> str:
+        try:
+            datetime.strptime(v, "%Y-%m-%d")
+        except ValueError:
+            raise ValueError("date must be in YYYY-MM-DD format")
+        return v
+
+    @field_validator("time")
+    @classmethod
+    def validate_time(cls, v: str) -> str:
+        try:
+            datetime.strptime(v, "%H:%M")
+        except ValueError:
+            raise ValueError("time must be in HH:MM format")
+        return v
+
+
+class CopernicusFetchResponse(CamelModel):
+    status: str
+    firebase_key: str | None = None
+    csv_path: str | None = None
+    record: dict | None = None
+    warnings: list[str] = []
