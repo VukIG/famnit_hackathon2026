@@ -177,6 +177,11 @@ function impactColor(impact) {
   if (impact === "bad") return "#E05C5C";
   return "#6B8FA8";
 }
+function toneColor(tone) {
+  if (tone === "good") return "#00E5C8";
+  if (tone === "marginal") return "#F5A623";
+  return "#E05C5C";
+}
 
 /* ─── STYLES (injected into <head>) ─────────────────────────── */
 const css = `
@@ -561,13 +566,14 @@ const css = `
 `;
 
 /* ─── CONFIDENCE GAUGE ───────────────────────────────────────── */
-function ConfidenceGauge({ value }) {
+function ConfidenceGauge({ value, color }) {
   const r = 60;
   const cx = 80, cy = 80;
   const startAngle = -220;
   const sweep = 260;
   const pct = Math.round(value * 100);
   const filled = (pct / 100) * sweep;
+  const fillColor = color || "var(--accent)";
 
   function polarToXY(angleDeg, radius) {
     const rad = (angleDeg * Math.PI) / 180;
@@ -585,12 +591,12 @@ function ConfidenceGauge({ value }) {
 
   return (
     <div className="gauge-wrap">
-      <div className="gauge-label">Confidence</div>
+      <div className="gauge-label">Visibility</div>
       <svg className="gauge-svg" width={160} height={120} viewBox="0 0 160 120">
         <path className="gauge-track" d={trackD} />
-        <path className="gauge-fill" d={fillD} />
+        <path className="gauge-fill" d={fillD} style={{ stroke: fillColor }} />
         <text className="gauge-pct" x={cx} y={cy + 2}>{pct}%</text>
-        <text className="gauge-confidence" x={cx} y={cy + 22} style={{ fontSize: "0.65rem", fill: "var(--accent)" }}>
+        <text className="gauge-confidence" x={cx} y={cy + 22} style={{ fontSize: "0.65rem", fill: fillColor }}>
           {confidenceLabel(value)}
         </text>
       </svg>
@@ -662,9 +668,11 @@ export default function App() {
   const [pickerHour,  setPickerHour]  = useState(String(now.getHours()).padStart(2, "0"));
   const [pickerMin,   setPickerMin]   = useState(String(now.getMinutes()).padStart(2, "0"));
   const [pickerOpen,  setPickerOpen]  = useState(null);
-  const [status, setStatus] = useState({ msg: "", type: "" });
   const [loading, setLoading] = useState(false);
   const [selectedWin, setSelectedWin] = useState(null);
+  const [data, setData] = useState(null);
+  const [queryInfo, setQueryInfo] = useState(null);
+  const [error, setError] = useState(null);
   const styleRef  = useRef(null);
   const pickerRef = useRef(null);
 
@@ -701,26 +709,27 @@ export default function App() {
     const h = parseInt(pickerHour, 10);
     const mi = parseInt(pickerMin, 10);
     if (!d || !mo || !y || isNaN(h) || isNaN(mi)) {
-      setStatus({ msg: "Fill in all date and time fields.", type: "err" });
+      setError("Please pick a date and time.");
       return;
     }
     const date = `${y}-${String(mo).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
-    const timeOfDay = `${String(h).padStart(2,"0")}:${String(mi).padStart(2,"0")}:00`;
+    const time = `${String(h).padStart(2,"0")}:${String(mi).padStart(2,"0")}`;
     setLoading(true);
-    setStatus({ msg: "Querying forecast engine…", type: "" });
+    setError(null);
     try {
       const response = await fetch("/api/predict", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ date, time: timeOfDay }),
+        body: JSON.stringify({ date, time }),
       });
-      if (response.ok) {
-        setStatus({ msg: "Forecast received.", type: "ok" });
-      } else {
-        setStatus({ msg: "Server returned an error.", type: "err" });
+      if (!response.ok) {
+        throw new Error(`Backend returned ${response.status}`);
       }
-    } catch {
-      setStatus({ msg: "Network error — showing cached forecast.", type: "err" });
+      const json = await response.json();
+      setData(json);
+      setQueryInfo({ date, time });
+    } catch (err) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -754,23 +763,47 @@ export default function App() {
       {/* HERO */}
       <section className="hero reveal reveal-2">
         <div>
-          <div className="hero-label">Next optimal window</div>
-          <div className="hero-time">
-            <span>{formatTime(hero.startsAt)}</span>
-            {" "}→ {formatTime(hero.endsAt)}
-          </div>
-          <div className="hero-sub">
-            {formatDate(hero.startsAt)} · {windowDuration(hero.startsAt, hero.endsAt)} ·{" "}
-            Visibility score {hero.visibilityScore.toFixed(1)} / 10
-          </div>
-          <button className="hero-cta" onClick={() => setSelectedWin(hero.id)}>
-            View details
-            <svg viewBox="0 0 16 16" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 8h10M9 4l4 4-4 4" />
-            </svg>
-          </button>
+          <div className="hero-label">Visibility prediction</div>
+          {!data && !loading && (
+            <div className="hero-sub" style={{ marginTop: "12px" }}>
+              Pick a date and time below to see the predicted visibility.
+            </div>
+          )}
+          {loading && (
+            <div className="hero-time" style={{ color: "var(--ink-muted)", fontSize: "2rem" }}>
+              Calculating…
+            </div>
+          )}
+          {data && (
+            <>
+              <div className="hero-time">
+                <span style={{ color: toneColor(data.statusTone) }}>
+                  {Math.round(100 - data.visibilityScore)}%
+                </span>
+                {" "}
+                <span className="badge" style={{
+                  background: toneColor(data.statusTone) + "22",
+                  color: toneColor(data.statusTone),
+                  fontSize: "1rem",
+                  verticalAlign: "middle",
+                  padding: "4px 14px",
+                }}>
+                  {data.statusLabel}
+                </span>
+              </div>
+              <div className="hero-sub">
+                {queryInfo && `For ${queryInfo.date} at ${queryInfo.time}. `}
+                {data.statusTone === "good" && "Conditions look great — solid visibility expected."}
+                {data.statusTone === "marginal" && "Conditions are borderline — check wind and waves before going."}
+                {data.statusTone === "poor" && "Visibility likely low — consider rescheduling."}
+              </div>
+            </>
+          )}
         </div>
-        <ConfidenceGauge value={hero.confidence} />
+        <ConfidenceGauge
+          value={data ? (100 - data.visibilityScore) / 100 : 0}
+          color={data ? toneColor(data.statusTone) : "#3a4555"}
+        />
       </section>
 
       {/* DATE PICKER / API FORM */}
@@ -899,46 +932,81 @@ export default function App() {
             {loading ? "Checking…" : "Check conditions"}
           </button>
         </div>
-        {status.msg && (
-          <div className={`picker-status${status.type ? " " + status.type : ""}`}>
-            {status.msg}
+        {error && (
+          <div className="picker-status err">{error}</div>
+        )}
+        {loading && (
+          <div className="picker-status">Querying forecast engine…</div>
+        )}
+        {data && queryInfo && (
+          <div style={{
+            marginTop: "16px",
+            padding: "16px 20px",
+            borderRadius: "8px",
+            borderLeft: `4px solid ${toneColor(data.statusTone)}`,
+            background: "rgba(255,255,255,0.04)",
+            display: "flex",
+            alignItems: "center",
+            gap: "24px",
+            animation: "fadein 0.4s ease both",
+          }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", minWidth: "64px" }}>
+              <span style={{
+                fontSize: "2rem", fontWeight: 700, fontFamily: "var(--font-display)",
+                color: toneColor(data.statusTone), lineHeight: 1,
+              }}>
+                {Math.round(100 - data.visibilityScore)}%
+              </span>
+              <span style={{
+                fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: "0.05em",
+                color: toneColor(data.statusTone), marginTop: "4px",
+              }}>
+                {data.statusLabel}
+              </span>
+            </div>
+            <div style={{ flex: 1, fontSize: "0.875rem", opacity: 0.85, lineHeight: 1.5, color: "var(--ink)" }}>
+              {data.statusTone === "good" && `Predicted visibility is good for ${queryInfo.date} at ${queryInfo.time}.`}
+              {data.statusTone === "marginal" && `Conditions are borderline for ${queryInfo.date} at ${queryInfo.time}. Worth a closer look.`}
+              {data.statusTone === "poor" && `Low visibility expected for ${queryInfo.date} at ${queryInfo.time}. Not recommended.`}
+            </div>
           </div>
         )}
       </div>
 
       {/* FACTOR STRIP */}
       <div className="reveal reveal-3">
-        <div className="section-head">Conditions now</div>
+        <div className="section-head">
+          {data ? "Conditions for the selected time" : "Conditions now"}
+        </div>
         <div className="factor-strip">
           <FactorTile
             icon="🌊"
             name="Tide"
-            value={hero.factors.tide.value.toFixed(1)}
-            unit="m"
-            impact={hero.factors.tide.impact}
-            sub={hero.factors.tide.trend === "rising" ? "Rising" : "Falling"}
+            value={data?.features?.nextTideHeightM != null ? data.features.nextTideHeightM.toFixed(1) : "—"}
+            unit={data?.features?.nextTideHeightM != null ? " m" : ""}
+            impact="neutral"
+            sub={data?.features?.nextTideType ?? "—"}
           />
           <FactorTile
             icon="💨"
             name="Wind"
-            value={Math.round(hero.factors.wind.value)}
-            unit={`km/h ${hero.factors.wind.direction}`}
-            impact={hero.factors.wind.impact}
+            value={data?.features?.windSpeedKmh != null ? Math.round(data.features.windSpeedKmh) : "—"}
+            unit={data?.features?.windSpeedKmh != null ? " km/h" : ""}
+            impact="neutral"
           />
           <FactorTile
             icon="🌡"
             name="Water temp"
-            value={Math.round(hero.factors.waterTemp.value)}
-            unit="°C"
-            impact={hero.factors.waterTemp.impact}
+            value={data?.features?.waterTemperatureC != null ? Math.round(data.features.waterTemperatureC) : "—"}
+            unit={data?.features?.waterTemperatureC != null ? " °C" : ""}
+            impact="neutral"
           />
           <FactorTile
-            icon={moonPhaseEmoji(hero.factors.moonDistance.phase)}
-            name="Moon"
-            value={Math.round(hero.factors.moonDistance.value / 1000)}
-            unit="k km"
-            impact={hero.factors.moonDistance.impact}
-            sub={hero.factors.moonDistance.phase}
+            icon="🌕"
+            name="Moon phase"
+            value={data?.features?.moonPhase != null ? (data.features.moonPhase * 100).toFixed(0) : "—"}
+            unit={data?.features?.moonPhase != null ? "%" : ""}
+            impact="neutral"
           />
         </div>
       </div>
