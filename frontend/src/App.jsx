@@ -604,6 +604,8 @@ export default function App() {
   const [status, setStatus] = useState({ msg: "", type: "" });
   const [loading, setLoading] = useState(false);
   const [selectedWin, setSelectedWin] = useState(null);
+  const [forecast, setForecast] = useState(MOCK_FORECAST);
+  const [tideCurve, setTideCurve] = useState(TIDE_CURVE);
   const styleRef = useRef(null);
 
   useEffect(() => {
@@ -620,7 +622,31 @@ export default function App() {
     };
   }, []);
 
-  const hero = MOCK_FORECAST.windows[0];
+  useEffect(() => {
+    let cancelled = false;
+
+    fetch("/api/forecast")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!cancelled && data && Array.isArray(data.windows) && data.windows.length > 0) {
+          setForecast(data);
+        }
+      })
+      .catch(() => { /* silent fallback to mock */ });
+
+    fetch("/api/tide-curve")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!cancelled && data && Array.isArray(data.points) && data.points.length > 0) {
+          setTideCurve(data.points);
+        }
+      })
+      .catch(() => { /* silent fallback to mock */ });
+
+    return () => { cancelled = true; };
+  }, []);
+
+  const hero = forecast.windows[0];
 
   const handleCheck = async () => {
     if (!time) {
@@ -631,13 +657,26 @@ export default function App() {
     setStatus({ msg: "Querying forecast engine…", type: "" });
     try {
       const [date, timeOfDay] = time.split("T");
+      // Backend expects HH:MM (without seconds); datetime-local may send HH:MM or HH:MM:SS.
+      const hhmm = timeOfDay.length > 5 ? timeOfDay.slice(0, 5) : timeOfDay;
       const response = await fetch("/api/predict", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ date, time: timeOfDay }),
+        body: JSON.stringify({ date, time: hhmm }),
       });
       if (response.ok) {
-        setStatus({ msg: "Forecast received.", type: "ok" });
+        const data = await response.json();
+        if (data && data.window) {
+          // Prepend the queried window to the list and open its detail panel.
+          setForecast((prev) => ({
+            ...prev,
+            windows: [data.window, ...prev.windows.filter((w) => !w.id.startsWith("q-"))],
+          }));
+          setSelectedWin(data.window.id);
+          setStatus({ msg: "Forecast received.", type: "ok" });
+        } else {
+          setStatus({ msg: "Forecast received (no window data).", type: "ok" });
+        }
       } else {
         setStatus({ msg: "Server returned an error.", type: "err" });
       }
@@ -649,7 +688,7 @@ export default function App() {
   };
 
   const selected = selectedWin
-    ? MOCK_FORECAST.windows.find((w) => w.id === selectedWin)
+    ? forecast.windows.find((w) => w.id === selectedWin)
     : null;
 
   return (
@@ -665,7 +704,7 @@ export default function App() {
               <path d="M8 1a5 5 0 0 1 5 5c0 4-5 9-5 9S3 10 3 6a5 5 0 0 1 5-5z" />
               <circle cx="8" cy="6" r="1.5" />
             </svg>
-            {MOCK_FORECAST.locationName}
+            {forecast.locationName}
           </div>
           <div className="location-pill" style={{ color: "var(--ink-muted)" }}>
             {new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
@@ -763,7 +802,7 @@ export default function App() {
             Optimal window {formatTime(hero.startsAt)} – {formatTime(hero.endsAt)} highlighted
           </div>
           <ResponsiveContainer width="100%" height={200}>
-            <AreaChart data={TIDE_CURVE} margin={{ top: 10, right: 16, left: -20, bottom: 0 }}>
+            <AreaChart data={tideCurve} margin={{ top: 10, right: 16, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="tideGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#00E5C8" stopOpacity={0.25} />
@@ -805,7 +844,7 @@ export default function App() {
       <div className="reveal reveal-5">
         <div className="section-head">Coming up</div>
         <div className="forecast-scroll">
-          {MOCK_FORECAST.windows.map((w) => (
+          {forecast.windows.map((w) => (
             <WindowCard
               key={w.id}
               win={w}
@@ -886,7 +925,7 @@ export default function App() {
       {/* FOOTER */}
       <footer className="footer">
         <div className="footer-ts">
-          Last updated {new Date(MOCK_FORECAST.generatedAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
+          Last updated {new Date(forecast.generatedAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
         </div>
         <div className="footer-mission">
           Removing the guesswork from underwater viewing · Sea Oasis
