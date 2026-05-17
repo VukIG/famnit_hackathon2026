@@ -6,3 +6,6 @@ httpx
 astral
 xgboost
 numpy
+pandas>=2.0
+scipy>=1.10
+matplotlib>=3.7
