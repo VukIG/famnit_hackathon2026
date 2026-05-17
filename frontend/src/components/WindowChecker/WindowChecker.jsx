@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from "react";
 import "./WindowChecker.css";
-import ConfidenceDial from "../ConfidenceDial/ConfidenceDial";
 
 export default function WindowChecker() {
   const now = new Date();

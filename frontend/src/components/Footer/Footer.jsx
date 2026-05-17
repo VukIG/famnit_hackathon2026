@@ -1,11 +1,11 @@
 import "./Footer.css";
+import { COMING_SOON } from "../../lib/constants";
 
-export default function Footer({ generatedAt, locationName }) {
-  const timeStr = new Date(generatedAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+export default function Footer() {
   return (
     <footer className="footer">
-      <span className="micro">Last updated {timeStr}</span>
-      <span className="micro">Removing the guesswork from underwater viewing · {locationName}</span>
+      <span className="micro">Last updated {COMING_SOON}</span>
+      <span className="micro">Source metadata {COMING_SOON}</span>
     </footer>
   );
 }

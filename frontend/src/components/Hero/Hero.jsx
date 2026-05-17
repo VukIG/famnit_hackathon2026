@@ -1,6 +1,6 @@
 import "./Hero.css";
 import ConfidenceDial from "../ConfidenceDial/ConfidenceDial";
-import { formatTime, windowDuration } from "../../lib/helpers";
+import { COMING_SOON } from "../../lib/constants";
 
 export default function Hero({ window: win }) {
   return (
@@ -10,18 +10,14 @@ export default function Hero({ window: win }) {
           <div className="hero__dot bio-dot" />
           <span className="micro micro-bio">Next Optimal Window</span>
         </div>
-        <h1 className="hero__h1">
-          {formatTime(win.startsAt)}
-          <span className="hero__arrow">→</span>
-          {formatTime(win.endsAt)}
-        </h1>
+        <h1 className="hero__h1">{COMING_SOON}</h1>
         <div className="hero__sub">
           <span>
-            Window <span className="hero__sub-val">{windowDuration(win.startsAt, win.endsAt)}</span>
+            Window <span className="hero__sub-val">{COMING_SOON}</span>
           </span>
-          <span className="hero__sub-sep">·</span>
+          <span className="hero__sub-sep">/</span>
           <span>
-            Visibility <span className="hero__sub-val">{win.visibilityScore.toFixed(1)}</span> / 10
+            Visibility <span className="hero__sub-val">{COMING_SOON}</span>
           </span>
         </div>
       </div>

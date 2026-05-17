@@ -1,5 +1,6 @@
 import "./ConditionsNow.css";
-import { impactColor, impactIcon, moonPhaseEmoji } from "../../lib/helpers";
+import { impactColor, impactIcon } from "../../lib/helpers";
+import { COMING_SOON } from "../../lib/constants";
 
 function TideIcon() {
   return (
@@ -22,19 +23,17 @@ function MoonIcon() {
   );
 }
 
-function Tile({ label, icon, value, unit, sub, impact }) {
+function Tile({ label, icon, impact }) {
   return (
     <div className="conditions__tile">
       <div className="conditions__tile-head">
         <span className="micro">{label}</span>
         <span className="conditions__tile-icon">{icon}</span>
       </div>
-      <div className="conditions__tile-val">
-        {value}<span className="conditions__tile-unit">{unit}</span>
-      </div>
-      {sub && <div className="conditions__tile-sub">{sub}</div>}
+      <div className="conditions__tile-val">{COMING_SOON}</div>
+      <div className="conditions__tile-sub">{COMING_SOON}</div>
       <div className="conditions__tile-impact" style={{ color: impactColor(impact) }}>
-        {impactIcon(impact)} {impact.charAt(0).toUpperCase() + impact.slice(1)}
+        {impactIcon(impact)} {COMING_SOON}
       </div>
     </div>
   );
@@ -47,36 +46,10 @@ export default function ConditionsNow({ factors }) {
         <span className="micro">Conditions Now</span>
       </div>
       <div className="conditions__grid">
-        <Tile
-          label="Tide"
-          icon={<TideIcon />}
-          value={factors.tide.value.toFixed(1)}
-          unit="m"
-          sub={factors.tide.trend === "rising" ? "Rising" : "Falling"}
-          impact={factors.tide.impact}
-        />
-        <Tile
-          label="Wind"
-          icon={<WindIcon />}
-          value={Math.round(factors.wind.value)}
-          unit={`km/h ${factors.wind.direction}`}
-          impact={factors.wind.impact}
-        />
-        <Tile
-          label="Water Temp"
-          icon={<TempIcon />}
-          value={Math.round(factors.waterTemp.value)}
-          unit="°C"
-          impact={factors.waterTemp.impact}
-        />
-        <Tile
-          label="Moon"
-          icon={<MoonIcon />}
-          value={Math.round(factors.moonDistance.value / 1000)}
-          unit="k km"
-          sub={factors.moonDistance.phase}
-          impact={factors.moonDistance.impact}
-        />
+        <Tile label="Tide" icon={<TideIcon />} impact={factors.tide.impact} />
+        <Tile label="Wind" icon={<WindIcon />} impact={factors.wind.impact} />
+        <Tile label="Water Temp" icon={<TempIcon />} impact={factors.waterTemp.impact} />
+        <Tile label="Moon" icon={<MoonIcon />} impact={factors.moonDistance.impact} />
       </div>
     </section>
   );

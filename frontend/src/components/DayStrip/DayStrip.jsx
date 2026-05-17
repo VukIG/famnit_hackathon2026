@@ -1,5 +1,6 @@
 import "./DayStrip.css";
-import { formatTime, stateColor, stateBg, stateLabel } from "../../lib/helpers";
+import { stateColor, stateBg } from "../../lib/helpers";
+import { COMING_SOON } from "../../lib/constants";
 
 export default function DayStrip({ windows, selectedId, onSelect }) {
   return (
@@ -22,7 +23,7 @@ export default function DayStrip({ windows, selectedId, onSelect }) {
               tabIndex={0}
             >
               <div className={`day-strip__day${i === 0 ? " day-strip__day--today" : ""}`}>
-                {win.label}
+                {COMING_SOON}
               </div>
               <div className="day-strip__bar-wrap">
                 <div
@@ -34,14 +35,12 @@ export default function DayStrip({ windows, selectedId, onSelect }) {
                   }}
                 />
               </div>
-              <div className="day-strip__range">
-                {formatTime(win.startsAt)}<br />→ {formatTime(win.endsAt)}
-              </div>
+              <div className="day-strip__range">{COMING_SOON}</div>
               <div
                 className="day-strip__badge"
                 style={{ background: bg, color }}
               >
-                {stateLabel(win.conditionState)}
+                {COMING_SOON}
               </div>
             </div>
           );

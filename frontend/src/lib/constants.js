@@ -3,3 +3,5 @@ export const VERDICT = {
   marginal: { color: "#E6B454", label: "WAIT",  dim: "rgba(230,180,84,0.18)" },
   poor:     { color: "#C46B6B", label: "NO-GO", dim: "rgba(196,107,107,0.18)" },
 };
+
+export const COMING_SOON = "Coming soon";

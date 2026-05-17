@@ -1,6 +1,7 @@
 import "./Header.css";
+import { COMING_SOON } from "../../lib/constants";
 
-export default function Header({ locationName }) {
+export default function Header() {
   const dateStr = new Date()
     .toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
     .toUpperCase();
@@ -11,7 +12,7 @@ export default function Header({ locationName }) {
         You<sup>(R)</sup> Sea
       </div>
       <div className="header__pills">
-        <span className="header__pill">· {locationName}</span>
+        <span className="header__pill">/ {COMING_SOON}</span>
         <span className="header__pill">{dateStr}</span>
       </div>
     </header>
