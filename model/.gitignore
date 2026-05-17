@@ -5,3 +5,5 @@ copied_images
 
 *.csv
 *.pt
+*.png
+*.json
