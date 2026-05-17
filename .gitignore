@@ -1,1 +1,8 @@
-.claude
+/model/23sp_4120img_34945annots_2688res/
+/model/copied_images/
+*.jpg
+*.png
+*.svg
+*.csv
+*.json
+*.pt
