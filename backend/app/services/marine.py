@@ -8,6 +8,11 @@ from app.config import settings
 _BASE_URL = "https://marine-api.open-meteo.com/v1/marine"
 _FIELDS = "wave_height,wave_direction,wave_period,wind_wave_peak_period,sea_surface_temperature"
 
+def _closest_hour_index(times: list[str], target: datetime) -> int:
+    parsed = [datetime.fromisoformat(t) for t in times]
+    naive = target.replace(tzinfo=None)
+    return min(range(len(parsed)), key=lambda i: abs((parsed[i] - naive).total_seconds()))
+
 
 # Fetches wave data for the target hour from Open-Meteo Marine.
 async def fetch_wave_data(target: datetime) -> dict:
@@ -24,8 +29,9 @@ async def fetch_wave_data(target: datetime) -> dict:
             data = response.json()
 
         times = data["hourly"]["time"]
-        target_str = target.strftime("%Y-%m-%dT%H:00")
-        idx = times.index(target_str)
+        if not times:
+            raise ValueError("Empty hourly times from Open-Meteo Marine")
+        idx = _closest_hour_index(times, target)
 
         return {
             "wave_height_m": data["hourly"]["wave_height"][idx],

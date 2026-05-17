@@ -1199,7 +1199,7 @@ function Shell() {
           <div className="topbar-right">
             <nav className="route-nav" aria-label="Primary navigation">
               <NavLink className="route-link" to="/main">
-                Main
+                Predict
               </NavLink>
               <NavLink className="route-link" to="/dashboard">
                 Dashboard
