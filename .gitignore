@@ -45,3 +45,10 @@ model/data/
 plan*
 requirements.txt
 app/visibility_model.json
+
+model/copied_images
+
+model/23sp_4120img_34945annots_2688res
+*.csv
+*.json
+*.pt
